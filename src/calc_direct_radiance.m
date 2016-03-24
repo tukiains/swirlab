@@ -33,13 +33,18 @@ for n=1:ngas
 end
 K = [K diag(t_beam)*diag(sol)*L ones(length(wn),1)]; % base line
 
+%keyboard
+%koe = -diag(t_beam.*base)*cmat';
+%koe = reshape(koe,nwl,ngas,nlay);
+
 % derivatives part II: 1 value / wl / gas / layer
-G = reshape(diag(dens_los)*cmat,ngas,nlay,nwl);
-for n=1:ngas
-    K2(n,:,:) = bsxfun(@times,-squeeze(G(n,:,:)),(t_beam .* base)'); % just gases
-end
+%G = reshape(diag(dens_los)*cmat,ngas,nlay,nwl);
+%for n=1:ngas
+%    K2(n,:,:) = bsxfun(@times,-squeeze(G(n,:,:)),(t_beam .* base)'); % just gases
+%end
 
-
+K2 = -cmat*diag(t_beam.*base);
+K2 = reshape(K2,ngas,nlay,nwl);
 
 
 

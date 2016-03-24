@@ -71,92 +71,45 @@ sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 % input for residual / jacobian calculation
 varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo);
 
+%% -------------------------
+%% prior scaling method (LM)
+%% -------------------------
+
 % initial values
 theta0 = [ones(1,length(invgas)), 0.5, 0.5, 0.5, 0.001];
 
-% levenberq-marquard fit
+% LM-fit of scaling factors
 [theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
 
-break
+%% -------------------------------
+%% dimension reduction method (LM)
+%% -------------------------------
 
-
-%% --------------------------
-%% dimension reduction method
-%% --------------------------
-
-airi = exp(interp1(alt,log(air),alt2));
-
-% check this
+% number of parameters
 d = [3 ones(1,length(invgas)-1)];
 
-mu = 0;
-samples = 0;
-[P, C, Q] = reduce_dim(invgas, gasvec, d, alt2, layer_dens, airi, samples);
+% truncate prior covariance 
+[P, C, Q] = reduce_dim(invgas,d,geo.center_alts);
 
-data = create_datamat(wn,gasvec,cros,1,los_dens,los_aind,atmos,refe, ...
-                      reso,invgas,sol,ils_method,wn_shift,use_error, ...
-                      plot_res,alt,d,P,mu,'yes','lm',layer_dens,alt2,noise,L,len_lay);
-data.plotresi = 1;
 % initial values
 theta0 = [zeros(1,sum(d)) theta(end-3:end)'];
-%theta0 = mean(chain(10000:end,:)); % if you want to plot a good residual
-
-npar = length(theta0);
 
 % jacobian and residual functions
-%jacfun = @(theta0) jacfuniredu(theta0,P,data);
-%resfun = @(theta0) resfuniredu(theta0,data);
+jacfuni = @(theta0) jacfun_dr(theta0,d,P,varargin);
+resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 
-% levenberq marquardt fitting
-%[theta2,cmat2,rss2,r2] = levmar(resfun, jacfun ,theta0');
+% LM-fit of alpha parameters 
+[theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
-% profiles
-reduatmos = redu2full(theta2', data);
+% retrieved profiles
+atmos2 = redu2full(theta2,d,P,invgas,geo.layer_dens);
 
-figure(1)
-hold on
-% profile scaling result
-%plot(atmos(1,:)*theta(1)./air,alt,'b-','linewidth',2)
-% dimension reduction result
-plot(reduatmos(1,:)./airi*1e9,alt2,'g-','linewidth',2)
-%set(gca,'box','on')
-%set(gca,'ylim',[0 45])
-% aircore
-[ac_co2,ac_co2e,ac_ch4,ac_ch4e,ac_co,ac_coe,ac_pres,ac_alt,ac_temp,ac_air] = read_aircore_sounding(ac_file);
-plot(ac_ch4,ac_alt,'r-','linewidth',2)
+%% ---------------------------------
+%% dimension reduction method (MCMC)
+%% ---------------------------------
 
-if (1==1)
-    figure(12)
-    subplot(2,1,2)
-    hold on
-    ct = cbrewer('qual','Set1',8);
-    plot(wn,r,'-','linewidth',2,'color',ct(2,:))
-    plot(wn,r2(1:length(wn)),'-','linewidth',2,'color',ct(5,:))
-    h=legend('Prior scaling','Dimension reduction')
-    set(h,'location','southeast')
-    set(h,'fontsize',14)
-    legend boxoff
-    set(gca,'box','on')
-    xlabel('Wavenumber [cm^{-1}]','fontsize',14)
-    ylabel('Residual','fontsize',14)
-    set(gca,'xlim',[wn(16) wn(end-16)])
-    print_fig(18,12,'resis')
-end
-
-%% MCMC run
-%% MCMC prior
-data.plotresi = 0;
-simulations = 50000;    % number of mcmc laps
-updatesigma = 1;       % 1 = estimate sigma2 based on residuals, 0 = constant / error assumed to be known
-data.tdeg = 0;
-% with any other value than 0, assume error model to be student's t-distribution with degree tdeg
-% if 0, assume error variance to be constant and the distribution not known
-if data.tdeg ~= 0
-    sigma2 = 1;     % error model will be included to the distance functions
-    updatesigma = 0;
-    data.upsig2 = 1;
-end
-
+simulations = 1000;                   % number of mcmc laps
+updatesigma = 1;                      % 1 = estimate sigma2 based on residuals, 0 = constant / error assumed to be known
                                                                                                                                          
 clear options params model
 

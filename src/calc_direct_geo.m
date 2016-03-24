@@ -19,3 +19,6 @@ for n=1:length(gasvec)
     geo.layer_dens.(char(gasvec(n))) = (atmos(n,1:end-1)+atmos(n,2:end))/2;
 end
 
+% air density
+geo.air = exp(interp1(altgrid,log(air),geo.center_alts));
+

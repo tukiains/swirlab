@@ -4,7 +4,7 @@ function [theta,cmat,rss,r] = levmar(resfun,jacfun,theta0,varargin)
 %  resfun(theta, varargin) - residual function
 %  jacfun(theta, varargin) - Jacobian function
 
-r = feval(resfun, theta0, varargin{:}); % residuals
+r = feval(resfun, theta0(:), varargin{:}); % residuals
 
 nev    = 1;                           
 
@@ -13,7 +13,7 @@ rss    = sum(r.^2) / (length(r)-length(theta0)-1);
 theta  = theta0(:); % initial parameter vector
 lam    = 1e-3;      % initial fudge factor
 maxit  = 100;       % maximum number of iterations
-abstol = 1e-8;     % convergence tolerance
+abstol = 1e-8;      % convergence tolerance
 
 trace = 2;
 
