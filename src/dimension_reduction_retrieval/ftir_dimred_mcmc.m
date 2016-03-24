@@ -68,21 +68,17 @@ wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L);
 sol_shift = calc_sol_shift(wn,refe,sol,wn_shift,sol_shift_wn);    
 sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 
-break
-
-%% okey we are here.
-
 % input for residual / jacobian calculation
-varargin = create_varargin(wn,gasvec,cros,1,los_dens,los_aind,atmos,refe, ...
-                           reso,invgas,sol,ils_method,wn_shift,use_error, ...
-                           plot_res,'yes',noise,L,alt,layer_dens,len_lay);
+varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo);
 
 % initial values
-theta0 = [ones(1,length(invgas)), 1, 1, 1, 0];
 theta0 = [ones(1,length(invgas)), 0.5, 0.5, 0.5, 0.001];
 
 % levenberq-marquard fit
-[theta,cmat,rss,r] = levmar(@resfuni, @jacfuni ,theta0, varargin);
+[theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
+
+break
+
 
 %% --------------------------
 %% dimension reduction method
@@ -108,11 +104,11 @@ theta0 = [zeros(1,sum(d)) theta(end-3:end)'];
 npar = length(theta0);
 
 % jacobian and residual functions
-jacfun = @(theta0) jacfuniredu(theta0,P,data);
-resfun = @(theta0) resfuniredu(theta0,data);
+%jacfun = @(theta0) jacfuniredu(theta0,P,data);
+%resfun = @(theta0) resfuniredu(theta0,data);
 
 % levenberq marquardt fitting
-[theta2,cmat2,rss2,r2] = levmar(resfun, jacfun ,theta0');
+%[theta2,cmat2,rss2,r2] = levmar(resfun, jacfun ,theta0');
 
 % profiles
 reduatmos = redu2full(theta2', data);
