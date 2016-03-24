@@ -18,7 +18,7 @@ for n=1:ninvgas
 end
 
 % evaluate Jacobian
-[~,K,~] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
+[~,K] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
 
 % error
 err = weight_term(sol,noise);

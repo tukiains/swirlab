@@ -14,7 +14,7 @@ offset = theta(end);
 dens = redu2full(theta,d,P,invgas,geo.layer_dens);
 
 % transmission
-[t,~,~] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
+t = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
 
 % convolution
 tc = conv_spectrum(wn,t);

@@ -1,4 +1,5 @@
-function [t,K,K2] = calc_direct_radiance(layer_dens,los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L)
+function [t,varargout] = calc_direct_radiance(layer_dens,los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L)
+% [t,K,K2] = calc_direct_radiance(layer_dens,los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L)
 
 % km to cm
 c = 1e5;
@@ -28,23 +29,19 @@ t_beam = exp(-cmat'*dens_los);
 t = t_beam .* base + offset;
 
 % derivatives part I: 1 values / wl / gas
-for n=1:ngas
-    K(:,n) = -c * squeeze(cros(n,:,:))'*(dens_mat(n,:)'.*los_lens) .*t_beam .* base; % gases
-end
-K = [K diag(t_beam)*diag(sol)*L ones(length(wn),1)]; % base line
-
-%keyboard
-%koe = -diag(t_beam.*base)*cmat';
-%koe = reshape(koe,nwl,ngas,nlay);
+if (nargout>1)
+    for n=1:ngas
+        K(:,n) = -c * squeeze(cros(n,:,:))'*(dens_mat(n,:)'.*los_lens) .*t_beam .* base; % gases
+    end
+    K = [K diag(t_beam)*diag(sol)*L ones(length(wn),1)]; % base line
+    varargout{1} = K;
+end    
 
 % derivatives part II: 1 value / wl / gas / layer
-%G = reshape(diag(dens_los)*cmat,ngas,nlay,nwl);
-%for n=1:ngas
-%    K2(n,:,:) = bsxfun(@times,-squeeze(G(n,:,:)),(t_beam .* base)'); % just gases
-%end
-
-K2 = -cmat*diag(t_beam.*base);
-K2 = reshape(K2,ngas,nlay,nwl);
-
+if (nargout>2)
+    K2 = -cmat*diag(t_beam.*base);
+    K2 = reshape(K2,ngas,nlay,nwl);
+    varargout{2} = K2;
+end
 
 
