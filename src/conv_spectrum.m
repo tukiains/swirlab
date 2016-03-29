@@ -4,9 +4,10 @@ function convoluted_spec = conv_spectrum(wn,spec)
 persistent f;
 
 if isempty(f) 
-    f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,2.3923e-3);
-    f = f./sum(f);
+    % Sodankylä FTS: OPD 45 cm, FOV 2.3923 mrad
+    f = ftir_ils(wn2wl(wn),45,2.3923e-3);
 end
+
 convoluted_spec = conv(spec,f,'same');
 
 

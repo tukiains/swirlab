@@ -1,23 +1,12 @@
+function out = ftir_dimred_mcmc(voigt_root_path,mfile)
+% out = ftir_dimred_mcmc(voigt_root_path,mfile)
+%
 
-clear all
-close all
-
-% set path for the absorption coeffs:
-% ----------------------------------------------------
-voigt_root_path = '/home/tukiains/data/voigt_shapes/';
-% ----------------------------------------------------
-
-% select date yyyymmdd of the FTS measurement
-% -------------------------------------------
-mdate = '20140319';
-%------------------
+% date from the file name
+mdate = mfile(end-17:end-10);
 
 % rootpath of swirlab
 labpath = fileparts(which('calc_direct_geo.m'));
-
-% select measurement file (there might be several for this day)
-mfiles = get_ftir_files(mdate,[labpath,'/../input_data/ftir_spectra/']);
-mfile = cell2mat(mfiles(1)); % just pick one
 
 % select window 
 [window,wnrange,gasvec,invgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
@@ -36,15 +25,10 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.001;
+noise = 0.0012;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
-
-% apodization
-f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
-f = f./sum(f);
-refe = conv(refe,f,'same');
 
 % altitude grid for the retrieval
 alt = create_layering(70,70,1.01);
@@ -157,4 +141,14 @@ A = redchain(:,1:d(1))*P{1}';
 profchain = exp(bsxfun(@plus,A,log(geo.layer_dens.ch4))); % log-normal case
 profs = bsxfun(@rdivide,profchain,geo.air);
 
+% save for output
+out.geo = geo;
+out.scaling_factors = theta;
+out.scaling_residual = r;
 
+out.dr_lm_atmos = atmos2;
+out.dr_lm_theta = theta2;
+out.dr_lm_residual = r;
+
+out.mcmc_profile = profs;
+out.mcmc_res = res;
