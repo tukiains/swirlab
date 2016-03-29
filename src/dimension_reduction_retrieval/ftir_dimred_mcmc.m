@@ -148,7 +148,7 @@ out.scaling_residual = r;
 
 out.dr_lm_atmos = dr_atmos;
 out.dr_lm_theta = theta2;
-out.dr_lm_residual = r;
+out.dr_lm_residual = r2;
 
 out.mcmc_profs = profs;
 out.mcmc_res = res;
