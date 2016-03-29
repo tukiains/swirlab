@@ -87,7 +87,7 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
 % retrieved profiles
-atmos2 = redu2full(theta2,d,P,invgas,geo.layer_dens);
+dr_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
 
 %% ---------------------------------
 %% dimension reduction method (MCMC)
@@ -97,7 +97,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 50000;                % number of MCMC laps
+options.nsimu = 100000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
@@ -146,9 +146,9 @@ out.geo = geo;
 out.scaling_factors = theta;
 out.scaling_residual = r;
 
-out.dr_lm_atmos = atmos2;
+out.dr_lm_atmos = dr_atmos;
 out.dr_lm_theta = theta2;
 out.dr_lm_residual = r;
 
-out.mcmc_profile = profs;
+out.mcmc_profs = profs;
 out.mcmc_res = res;
