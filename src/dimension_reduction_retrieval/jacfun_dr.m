@@ -19,23 +19,20 @@ dens = redu2full(theta,d,P,invgas,geo.layer_dens);
 % error term
 err = weight_term(sol,noise);
 
+% gases
 X2 = [];
-i2 = 0;
 for n = 1:length(invgas)
     ind = find(ismember(gasvec,invgas(n))==1);
     X = squeeze(K2(ind,:,:))';
-    i1 = i2+1;
-    i2 = i2+d(n);
     prof = geo.layer_dens.(char(invgas(n))).*geo.los_lens';
     for m=1:size(X,2)
         X(:,m) = conv_spectrum(wn,X(:,m));
-        X(:,m) = interp1(wn,X(:,m),wn+wn_shift,'linear','extrap');
-        X(:,m) = X(:,m)./err;
-        X(:,m) = X(:,m)*prof(m); % This should be in log-normal case
+        X(:,m) = interp1(wn,X(:,m),wn+wn_shift,'linear','extrap')./err*prof(m);
     end
     X2 = [X2 X*P{n}];
 end
 
+% base line + offset
 z=1;
 for n = sum(d)+1:sum(d)+4
     X2(:,n) = conv_spectrum(wn,K(:,length(invgas)+z));
