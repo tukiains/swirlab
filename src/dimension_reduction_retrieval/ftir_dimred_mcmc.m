@@ -152,3 +152,6 @@ out.dr_lm_residual = r2;
 
 out.mcmc_profs = profs;
 out.mcmc_res = res;
+out.mcmc_chain = chain;
+out.mcmc_s2chain = s2chain;
+out.mcmc_sschain = sschain;
