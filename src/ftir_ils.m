@@ -3,9 +3,6 @@ function ils = ftir_ils(freq,L,th)
 % freq: frequency vector (nm)
 % ils: FTS instrument line shape
 
-%L = 45;
-%th = 2.3923e-3;
-
 gridi = min(freq):0.0001:max(freq);
 
 vn = wl2wn(gridi);          % wl -> wn
@@ -31,9 +28,6 @@ ils = interp1(gridi,tils,freq,'linear','extrap');
 
 ils = ils./sum(ils);
 
-% windowin?
-%h = hann(length(ils));
-%ils = ils.*h; 
 
 
 
