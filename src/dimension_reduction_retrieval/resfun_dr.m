@@ -30,5 +30,3 @@ r = r(16:end-16);
 
 % alpha-parameters should be added to residual 
 r = [r; theta(1:end-4)];
-
-
