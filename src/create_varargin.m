@@ -10,3 +10,4 @@ vmat{7} = wn_shift;
 vmat{8} = noise;
 vmat{9} = L;
 vmat{10} = geo;
+vmat{11} = weight_term(sol,noise);

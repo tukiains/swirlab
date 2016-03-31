@@ -1,4 +1,4 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lis)
 % out = ftir_dimred_mcmc(voigt_root_path,mfile)
 %
 
@@ -30,6 +30,10 @@ noise = 0.0012;
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
 
+% apodization
+f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
+refe = conv(refe,f,'same');
+
 % altitude grid for the retrieval
 alt = create_layering(70,70,1.01);
 
@@ -55,9 +59,9 @@ sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 % input for residual / jacobian calculation
 varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo);
 
-%% -------------------------
-%% prior scaling method (LM)
-%% -------------------------
+%% ----------------------------
+%% prior scaling method with LM
+%% ----------------------------
 
 % initial values
 theta0 = [ones(1,length(invgas)), 0.5, 0.5, 0.5, 0.001];
@@ -65,12 +69,18 @@ theta0 = [ones(1,length(invgas)), 0.5, 0.5, 0.5, 0.001];
 % LM-fit of scaling factors
 [theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
 
-%% -------------------------------
-%% dimension reduction method (LM)
-%% -------------------------------
+% save results for output
+out.geo = geo;
+out.scaling_factors = theta;
+out.scaling_residual = r;
+
+%% ----------------------------------
+%% prior covariance reduction with LM
+%% ----------------------------------
 
 % number of parameters
-d = [3 ones(1,length(invgas)-1)];
+k = 3;
+d = [k ones(1,length(invgas)-1)];
 
 % truncate prior covariance 
 [P, C, Q] = reduce_dim(invgas,d,geo.center_alts);
@@ -86,12 +96,49 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 % LM-fit of alpha parameters 
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
-% retrieved profiles
-dr_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
+% retrieved profiles etc. for output
+out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
+out.dr_lm_theta = theta2;
+out.dr_lm_residual = r2;
+out.dr_lm_std = sqrt(diag(cmat2));
+out.dr_pri_std = sqrt(diag(C{1}));
 
-%% ---------------------------------
-%% dimension reduction method (MCMC)
-%% ---------------------------------
+%% --------------------------
+%% LIS method (experimental!)
+%% --------------------------
+
+if (lis)
+    disp('using likelihood-informed dimension reduction')
+    % sample Jacobian around MAP
+    meanupd = @(x,m,i) m + 1./i*(x-m);
+    Jm = 0;
+  for i=1:100    
+        [~,J1] = jacfuni(mvnorr(1,theta2,cmat2)');
+        if (length(invgas)>1)
+            J1 = reshape(J1,size(J1,1),length(geo.center_alts),length(invgas));
+            Jsample = squeeze(J1(:,:,1));
+        end
+        Jm = meanupd(Jsample,Jm,i);
+    end
+    
+    % cholesky of prior covariance
+    cov1 = C{1};
+    L = chol(cov1+eye(size(cov1))*1e-10);
+
+    % Jacobian times chol(C)
+    Js = Jm*L;
+    
+    % svd of that
+    [~,s,v] = svd(Js,0);
+    P(1) = {v(:,1:k)}; % projection matrix
+
+else
+    disp('using dimension reduction')
+end
+
+%% -------------
+%% MCMC sampling 
+%% -------------
 
 model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
@@ -113,14 +160,13 @@ options.qcov = eye(npar)*0.1^2;      % initial covariance for the Gaussian propo
 % (sqrt(0.32228)), mean 1.62161 (0.32228) mu = data.mu;
 
 % alpha-parameters
-for i=1:sum(d)
+for i = 1:sum(d)
     %            'name',              initial value,    min,    max,    prior mean,     prior std deviation
-    %params{i} = {num2str(i),          theta2(i),      -Inf, Inf,    0,              1};
     params{i} = {num2str(i),          0,      -Inf, Inf,    0,              1};
 end
 
 % parametrized polynomial terms
-for i=sum(d)+1:npar
+for i = sum(d)+1:npar
     params{i} = {num2str(i),          theta2(i),        0,   2,    0.2,             1};
 end
 
@@ -142,14 +188,6 @@ profchain = exp(bsxfun(@plus,A,log(geo.layer_dens.ch4))); % log-normal case
 profs = bsxfun(@rdivide,profchain,geo.air);
 
 % save for output
-out.geo = geo;
-out.scaling_factors = theta;
-out.scaling_residual = r;
-
-out.dr_lm_atmos = dr_atmos;
-out.dr_lm_theta = theta2;
-out.dr_lm_residual = r2;
-
 out.mcmc_profs = profs;
 out.mcmc_res = res;
 out.mcmc_chain = chain;

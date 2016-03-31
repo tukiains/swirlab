@@ -1,7 +1,7 @@
 function Ko = jacfun(theta,varargin)
 % K=jacfun(theta,varargin)
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(varargin);
 
 p1 = theta(end-3);
 p2 = theta(end-2);
@@ -20,9 +20,6 @@ end
 % evaluate Jacobian
 [~,K] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
 
-% error
-err = weight_term(sol,noise);
-
 % only retrieved gases
 for n = 1:ninvgas
     ind = find(ismember(gasvec,invgas(n))==1);
@@ -40,5 +37,5 @@ for n = ninvgas+1:ninvgas+4
 end
 
 % ignore edges
-Ko = Ko(15:end-15,:);
+Ko = Ko(16:end-16,:);
 

@@ -1,6 +1,8 @@
 function ils = ftir_ils(freq,L,th)
-% ils = ftir_ils(freq)
+% ils = ftir_ils(freq,L,th)
 % freq: frequency vector (nm)
+% L = OPD of the instrument
+% th = FOV in radians
 % ils: FTS instrument line shape
 
 gridi = min(freq):0.0001:max(freq);

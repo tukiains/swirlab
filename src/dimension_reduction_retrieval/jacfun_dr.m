@@ -6,7 +6,7 @@ function [X2 X3] = jacfun_dr(theta,d,P,varargin)
 %
 % Jacobian function for dimension reduction
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(varargin);
 
 p1 = theta(end-3);
 p2 = theta(end-2);
@@ -19,16 +19,13 @@ dens = redu2full(theta,d,P,invgas,geo.layer_dens);
 % Jacobian
 [~,K,K2] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
 
-% error term
-err = weight_term(sol,noise);
-
 % gases
 X2 = [];
 X3 = [];
 for n = 1:length(invgas)
     ind = find(ismember(gasvec,invgas(n))==1);
     X = squeeze(K2(ind,:,:))';
-    prof = geo.layer_dens.(char(invgas(n))).*geo.los_lens';
+    prof = dens.(char(invgas(n))).*geo.los_lens';
     for m = 1:size(X,2)
         X(:,m) = conv_spectrum(wn,X(:,m));
         X(:,m) = interp1(wn,X(:,m),wn+wn_shift,'linear','extrap')./err*prof(m);
@@ -46,8 +43,8 @@ for n = sum(d)+1:sum(d)+4
 end
 
 % remove edges
-X2 = X2(15:end-15,:);
-X3 = X3(15:end-15,:);
+X2 = X2(16:end-16,:);
+X3 = X3(16:end-16,:);
 
 % regularization
 I = eye(sum(d));

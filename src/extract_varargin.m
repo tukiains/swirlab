@@ -1,4 +1,4 @@
-function [wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo] = extract_varargin(a)
+function [wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(a)
 
 a = a{:};
 
@@ -12,5 +12,6 @@ wn_shift = cell2mat(a(7));
 noise = cell2mat(a(8));
 L = cell2mat(a(9));
 geo = a(10); geo = geo{1};
+err = cell2mat(a(11));
 
 

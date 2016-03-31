@@ -20,7 +20,7 @@ trace = 2;
 for i=1:maxit
 
     rssold = rss;
-    J  = feval(jacfun, theta, varargin{:}); % Jacobian of the model function
+    J   = feval(jacfun, theta, varargin{:}); % Jacobian of the model function
     J = J*-1;
     JJ = J'*J;
     
@@ -50,9 +50,8 @@ if trace
     disp(sprintf('Number of evaluations: %d, rss: %g, lam: %g',nev,rss,lam));
 end
 
-% optionally return estimate of the error covariance at the optimum
+% estimate of the error covariance at the optimum
 % (scaled by the reduced chi square value)
-if nargout>1
-    cmat = inv(JJ)*rss; 
-end
+cmat = inv(JJ)*rss; 
+
 

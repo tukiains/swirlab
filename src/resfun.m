@@ -1,7 +1,7 @@
 function r = resfun(theta,varargin)
 % r=resfuni(theta,varargin)
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(varargin);
 
 p1 = theta(end-3);
 p2 = theta(end-2);
@@ -23,13 +23,11 @@ tc = conv_spectrum(wn,t);
 % wn shift
 tc2 = interp1(wn,tc,wn+wn_shift,'linear','extrap');
 
-% error
-err = weight_term(sol,noise);
-
 % residual
 r = (tc2(:)-refe(:))./err;
 
 % ignore edges
-r = r(15:end-15);
+r = r(16:end-16);
+
 
 
