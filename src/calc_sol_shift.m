@@ -9,7 +9,7 @@ sol = interp1(wn,sol,wn+wn_shift,'linear','extrap');
 
 r = refe./max(refe);
 
-solind = findnearest(linewn,wn);
+[~,solind] = min(abs(wn-linewn));
 
 ind = find(wn>wn(solind)-0.06 & wn<wn(solind)+0.06);
 
