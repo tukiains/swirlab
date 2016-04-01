@@ -133,7 +133,7 @@ if (lis)
     P(1) = {v(:,1:k)}; % projection matrix
 
 else
-    disp('using dimension reduction')
+    disp('using ordinary dimension reduction')
 end
 
 %% -------------
@@ -144,7 +144,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 100000;                % number of MCMC laps
+options.nsimu = 50000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
@@ -153,36 +153,33 @@ options.updatesigma = 1;              % 1 allow automatic sampling and estimatio
 options.adaptint = 100;               % how often to adapt the proposal
 options.method = 'am';                % adaptation method: 'mh', 'dr', 'am' or 'dram'
 options.stats = 1;
-options.qcov = eye(npar)*0.1^2;      % initial covariance for the Gaussian proposal density of the MCMC sampler
-                                     % options.qcov = diag(diag(cmat));
+options.qcov = diag(diag(cmat2));     % initial covariance for the Gaussian proposal density of the MCMC sampler
 
-% MCMC parameters to sample: lognormal prior with mode 1, variance 1
-% (sqrt(0.32228)), mean 1.62161 (0.32228) mu = data.mu;
+% MCMC parameters to sample: 
 
 % alpha-parameters
 for i = 1:sum(d)
-    %            'name',              initial value,    min,    max,    prior mean,     prior std deviation
-    params{i} = {num2str(i),          0,      -Inf, Inf,    0,              1};
+    % 'name', initial value, min, max, prior mean, prior std
+    params{i} = {num2str(i), 0, -Inf, Inf, 0, 1};
 end
 
 % parametrized polynomial terms
 for i = sum(d)+1:npar
-    params{i} = {num2str(i),          theta2(i),        0,   2,    0.2,             1};
+    params{i} = {num2str(i), theta2(i), 0, 1, 0.2, 1};
 end
 
 % offset term
-params{end} = {num2str(npar),     0.001,   0,  1,    0.01,           Inf};
+params{end} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
 
 data.d = d;
 data.P = P;
 data.varargin = varargin;
-data.type = 'mcmc';
 
 % run MCMC
 [res,chain,s2chain,sschain] = mcmcrun(model,data,params,options);
 
 % retrieved profiles
-redchain = chain(end-20000:end,:);
+redchain = chain(end-20000:end,:); % take last 20k samples?
 A = redchain(:,1:d(1))*P{1}';
 profchain = exp(bsxfun(@plus,A,log(geo.layer_dens.ch4))); % log-normal case
 profs = bsxfun(@rdivide,profchain,geo.air);

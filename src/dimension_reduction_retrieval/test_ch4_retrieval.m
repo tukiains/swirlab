@@ -6,7 +6,8 @@ close all
 voigt_path = '/home/tukiains/data/voigt_shapes/';
 
 % measurement file:
-mfile = '/home/tukiains/Documents/MATLAB/swirlab_git/swirlab/input_data/ftir_spectra/wg20140319saebaa.067';
+%mfile = '/home/tukiains/Documents/MATLAB/swirlab_git/swirlab/input_data/ftir_spectra/wg20140319saebaa.067';
+mfile = '/home/tukiains/Documents/MATLAB/swirlab_git/swirlab/input_data/ftir_spectra/wg20130903saebaa.127'
 
 % use likelihood-informed retrieval?
 lis = false;
@@ -14,7 +15,6 @@ lis = false;
 % retrieve ch4
 out = ftir_dimred_mcmc(voigt_path,mfile,lis);
 
-% show results
 figure(1)
 clf
 hold on
@@ -25,7 +25,4 @@ plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1),out.geo.center_a
 % dimension reduction with LM:
 plot(out.dr_lm_atmos.ch4./out.geo.air,out.geo.center_alts,'g-','linewidth',2)
 set(gca,'ylim',[0 40])
-
-
-
 
