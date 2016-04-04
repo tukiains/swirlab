@@ -114,10 +114,8 @@ if (lis)
     Jm = 0;
     for i=1:100    
         [~,J1] = jacfuni(mvnorr(1,theta2,cmat2)');
-        if (length(invgas)>1)
-            J1 = reshape(J1,size(J1,1),length(geo.center_alts),length(invgas));
-            Jsample = squeeze(J1(:,:,1)); % take the first gas
-        end
+        J1 = reshape(J1,size(J1,1),length(geo.center_alts),length(invgas));
+        Jsample = squeeze(J1(:,:,1)); % take the first gas
         Jm = meanupd(Jsample,Jm,i);
     end
     
@@ -125,13 +123,13 @@ if (lis)
     cov1 = C{1};
     L = chol(cov1+eye(size(cov1))*1e-10,'lower');
 
-    % Jacobian times chol(C)
     Js = Jm*L;
     
     % svd of that
     [~,s,v] = svd(Js,0);
     P(1) = {L*v(:,1:k)}; % projection matrix
 
+    % complement space
     Po = L*v(:,k+1:end);
     
     out.lis_s = diag(s);
@@ -187,7 +185,9 @@ redchain = chain(end-20000:end,:); % take last 20k samples?
 
 A = redchain(:,1:d(1))*P{1}';
 
-A = A + randn(size(A,1),size(Po,2))*Po';
+if (lis)
+    A = A + randn(size(A,1),size(Po,2))*Po';
+end
 
 profchain = exp(bsxfun(@plus,A,log(geo.layer_dens.ch4))); % log-normal case
 
