@@ -19,7 +19,7 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
              int2str(min(window)),'-',int2str(max(window)),'/'];
 
 % cross sections 
-[c_wn, cros, c_alt] = read_cross_sections(gasvec, wnrange, labpath, voigtpath);
+[c_wn,cros,c_alt] = read_cross_sections(gasvec, wnrange, labpath, voigtpath);
 
 % ggg prior atmosphere file
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
@@ -79,7 +79,7 @@ out.scaling_residual = r;
 %% ----------------------------------
 
 % number of parameters
-k = 3;
+k = 4;
 d = [k ones(1,length(invgas)-1)];
 
 % truncate prior covariance 
@@ -112,25 +112,29 @@ if (lis)
     % sample Jacobian around MAP
     meanupd = @(x,m,i) m + 1./i*(x-m);
     Jm = 0;
-  for i=1:100    
+    for i=1:100    
         [~,J1] = jacfuni(mvnorr(1,theta2,cmat2)');
         if (length(invgas)>1)
             J1 = reshape(J1,size(J1,1),length(geo.center_alts),length(invgas));
-            Jsample = squeeze(J1(:,:,1));
+            Jsample = squeeze(J1(:,:,1)); % take the first gas
         end
         Jm = meanupd(Jsample,Jm,i);
     end
     
     % cholesky of prior covariance
     cov1 = C{1};
-    L = chol(cov1+eye(size(cov1))*1e-10);
+    L = chol(cov1+eye(size(cov1))*1e-10,'lower');
 
     % Jacobian times chol(C)
     Js = Jm*L;
     
     % svd of that
     [~,s,v] = svd(Js,0);
-    P(1) = {v(:,1:k)}; % projection matrix
+    P(1) = {L*v(:,1:k)}; % projection matrix
+
+    Po = L*v(:,k+1:end);
+    
+    out.lis_s = diag(s);
 
 else
     disp('using ordinary dimension reduction')
@@ -144,7 +148,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 50000;                % number of MCMC laps
+options.nsimu = 100000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
@@ -180,8 +184,13 @@ data.varargin = varargin;
 
 % retrieved profiles
 redchain = chain(end-20000:end,:); % take last 20k samples?
+
 A = redchain(:,1:d(1))*P{1}';
+
+A = A + randn(size(A,1),size(Po,2))*Po';
+
 profchain = exp(bsxfun(@plus,A,log(geo.layer_dens.ch4))); % log-normal case
+
 profs = bsxfun(@rdivide,profchain,geo.air);
 
 % save for output
