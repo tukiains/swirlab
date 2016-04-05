@@ -100,8 +100,10 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
 out.dr_lm_theta = theta2;
 out.dr_lm_residual = r2;
-out.dr_lm_std = sqrt(diag(cmat2));
-out.dr_pri_std = sqrt(diag(C{1}));
+out.dr_lm_cmat = cmat2;
+out.dr_pri_C = C;
+out.dr_lm_P = P;
+out.dr_k = k;
 
 %% --------------------------
 %% LIS method (experimental!)
@@ -133,10 +135,12 @@ if (lis)
     Po = L*v(:,k+1:end);
     
     out.lis_s = diag(s);
+    out.lis_P = P(1);
 
 else
     disp('using ordinary dimension reduction')
 end
+
 
 %% -------------
 %% MCMC sampling 

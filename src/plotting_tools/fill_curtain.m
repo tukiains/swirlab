@@ -1,6 +1,6 @@
 function out = fill_curtain(x,y1,y2,col)
 
-if nargin < 4
+if (nargin<4)
     col='red';
 end
 
@@ -11,6 +11,7 @@ n = length(x);
 X = [ x(1),  x,  x(n),  fliplr(x)  ];
 Y = [ y1(1), y2, y1(n), fliplr(y1) ];
 h = fill(Y,X,col,'Linestyle','none','handlevisibility','on');
-if nargout>0
+
+if (nargout>0)
     out = h;
 end
