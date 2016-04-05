@@ -12,7 +12,7 @@ mfile = [pathstr, '/../input_data/ftir_spectra/wg20140319saebaa.067'];
 %mfile = [pathstr, '/../input_data/ftir_spectra/wg20130903saebaa.127'];
 
 % use likelihood-informed retrieval?
-lis = true;
+lis = false;
 
 % retrieve ch4
 out = ftir_dimred_mcmc(voigt_path,mfile,lis);

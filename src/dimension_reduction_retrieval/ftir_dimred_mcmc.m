@@ -79,7 +79,7 @@ out.scaling_residual = r;
 %% ----------------------------------
 
 % number of parameters
-k = 4;
+k = 3;
 d = [k ones(1,length(invgas)-1)];
 
 % truncate prior covariance 
