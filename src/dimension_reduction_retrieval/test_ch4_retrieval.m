@@ -3,11 +3,11 @@ clear all
 close all
 
 % path for absorption coeffs:
-voigt_path = '/home/tukiains/data/voigt_shapes/';
+voigt_path = '/foo/bar/voigt_shapes/';
 
 % measurement file:
-%mfile = '/home/tukiains/Documents/MATLAB/swirlab_git/swirlab/input_data/ftir_spectra/wg20140319saebaa.067';
-mfile = '/home/tukiains/Documents/MATLAB/swirlab_git/swirlab/input_data/ftir_spectra/wg20130903saebaa.127'
+%mfile = '/foo/bar/swirlab/input_data/ftir_spectra/wg20140319saebaa.067';
+mfile = '/foo/bar/swirlab/input_data/ftir_spectra/wg20130903saebaa.127'
 
 % use likelihood-informed retrieval?
 lis = false;
