@@ -39,7 +39,7 @@ set(h4,'facealpha',fa)
 
 % aircore
 ac_file = get_aircore_file(mfile(end-17:end-10),[pathstr, '/../input_data/aircore/']);
-if (exist(ac_file)==1)
+if (exist(ac_file)==2)
     [co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(ac_file);
     plot(ch4./1e9,alt,'r-','linewidth',2)
 end
