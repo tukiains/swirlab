@@ -25,7 +25,7 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.0012;
+noise = 0.0008;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
@@ -105,7 +105,9 @@ out.dr_pri_C = C;
 out.dr_lm_P = P;
 out.dr_k = k;
 
-if (lm_only) return
+if (lm_only)
+    return
+end
 
 %% --------------------------
 %% LIS method (experimental!)
