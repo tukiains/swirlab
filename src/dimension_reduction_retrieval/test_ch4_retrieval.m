@@ -10,6 +10,9 @@ voigt_path = '/home/tukiains/data/voigt_shapes_2016/';
 % file to process
 mfile = [pathstr, '/../input_data/ftir_spectra/so20140508s0eaaa.0061'];
 
+%number of components
+k = 3;
+
 % levmar solution only (no mcmc)?
 lm_only = true;
 
@@ -17,7 +20,7 @@ lm_only = true;
 lis = false;
 
 % retrieve ch4
-out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis);
+out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k);
 
 figure(1)
 clf
