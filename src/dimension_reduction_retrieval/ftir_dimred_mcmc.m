@@ -1,4 +1,4 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile,lis)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis)
 % out = ftir_dimred_mcmc(voigt_root_path,mfile)
 %
 
@@ -105,6 +105,8 @@ out.dr_pri_C = C;
 out.dr_lm_P = P;
 out.dr_k = k;
 
+if (lm_only) return
+
 %% --------------------------
 %% LIS method (experimental!)
 %% --------------------------
@@ -140,8 +142,6 @@ if (lis)
 else
     disp('using ordinary dimension reduction')
 end
-
-return
 
 %% -------------
 %% MCMC sampling 

@@ -10,11 +10,14 @@ voigt_path = '/home/tukiains/data/voigt_shapes_2016/';
 % file to process
 mfile = [pathstr, '/../input_data/ftir_spectra/so20140508s0eaaa.0061'];
 
-% use likelihood-informed retrieval?
+% levmar solution only (no mcmc)?
+lm_only = true;
+
+% if we run mcmc, should we use likelihood-informed retrieval?
 lis = false;
 
 % retrieve ch4
-out = ftir_dimred_mcmc(voigt_path,mfile,lis);
+out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis);
 
 figure(1)
 clf
@@ -25,13 +28,21 @@ fa = 0.6;
 h1 = show_prior(out.geo.center_alts,out.geo.layer_dens.ch4,out.geo.air,out.dr_lm_P{1})
 set(h1,'facealpha',fa-0.2)
 
-% dimension reduction with MCMC (2-sigma posterior):
-h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs,[0.025 0.5 0.975]),[.5 .7 .3]);
-set(h2,'facealpha',fa+0.2)
-
-% dimension reduction with LM:
-h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
-set(h2,'facealpha',fa+0.2)
+if (lm_only)
+    % dimension reduction with LM:
+    h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
+    set(h2,'facealpha',fa+0.2)
+    str = 'DR (LM');
+else
+    % dimension reduction with MCMC (2-sigma posterior):
+    h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs,[0.025 0.5 0.975]),[.5 .7 .3]);
+    set(h2,'facealpha',fa+0.2)
+    if (lis)
+        str = 'LIS (MCMC)';
+    else
+        str = 'DR (MCMC)';
+    end
+end
 
 % prior
 plot(out.geo.layer_dens.ch4./out.geo.air,out.geo.center_alts,'b--','linewidth',2)
@@ -48,7 +59,7 @@ end
 
 set(gca,'ylim',[0 45])
 
-l = legend('prior','DR (MCMC)','DR (LM)','prior mean','scaled prior','AirCore')
+l = legend('prior',str,'prior mean','scaled prior','AirCore')
 legend boxoff
 
 
