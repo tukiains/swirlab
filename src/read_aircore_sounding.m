@@ -13,13 +13,6 @@ a = cellfun(@(x) length(str2num(x)),s);
 % what we have most are data
 ind = find(a==mode(a(a>0)));
 
-% make sure we have many measurements 
-if (length(ind)<30) 
-    ozone = [];
-    alt = [];
-    return
-end
-
 % read data (skip 10 first lines to make sure we dont include any header data)
 data = cell2mat(cellfun(@str2num,s(ind(10:end)),'UniformOutput',false));
 
