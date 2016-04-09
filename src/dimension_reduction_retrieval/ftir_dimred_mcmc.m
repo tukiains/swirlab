@@ -1,4 +1,4 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k)
 % out = ftir_dimred_mcmc(voigt_root_path,mfile)
 %
 
@@ -79,7 +79,6 @@ out.scaling_residual = r;
 %% ----------------------------------
 
 % number of parameters
-k = 3;
 d = [k ones(1,length(invgas)-1)];
 
 % truncate prior covariance 
