@@ -2,8 +2,8 @@ function out = ftir_dimred_mcmc(voigt_root_path,mfile,lis)
 % out = ftir_dimred_mcmc(voigt_root_path,mfile)
 %
 
-% date from the file name
-mdate = mfile(end-17:end-10);
+% date of the measurement
+mdate = get_date(mfile);
 
 % rootpath of swirlab
 labpath = fileparts(which('calc_direct_geo.m'));
@@ -12,7 +12,7 @@ labpath = fileparts(which('calc_direct_geo.m'));
 [window,wnrange,gasvec,invgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
 
 % solar zenith angle
-sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl']);
+sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
 
 % voig path
 voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
@@ -141,6 +141,7 @@ else
     disp('using ordinary dimension reduction')
 end
 
+return
 
 %% -------------
 %% MCMC sampling 
@@ -150,7 +151,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 100000;                % number of MCMC laps
+options.nsimu = 50000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
