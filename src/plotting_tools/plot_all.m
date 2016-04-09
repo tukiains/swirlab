@@ -1,4 +1,7 @@
 
+% requires tight_subplot.m
+% available at: http://goo.gl/0BD7wA
+
 clear all
 close all
 
