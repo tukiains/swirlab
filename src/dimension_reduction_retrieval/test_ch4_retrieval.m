@@ -32,7 +32,7 @@ if (lm_only)
     % dimension reduction with LM:
     h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
     set(h2,'facealpha',fa+0.2)
-    str = 'DR (LM');
+    str = 'DR (LM)';
 else
     % dimension reduction with MCMC (2-sigma posterior):
     h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs,[0.025 0.5 0.975]),[.5 .7 .3]);
