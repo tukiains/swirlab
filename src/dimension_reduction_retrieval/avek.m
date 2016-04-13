@@ -1,4 +1,5 @@
 function [A_alpha,A_layer,A_column] = avek(K,P,theta,x0,los_len,err,alt)
+
 % K: Jacobian
 % P: projection matrix
 % x0: prior mean
@@ -8,13 +9,15 @@ function [A_alpha,A_layer,A_column] = avek(K,P,theta,x0,los_len,err,alt)
 
 x = exp(P*theta(:)).*x0(:); % current profile
 
-Kv = K*diag(los_len); % Jacobian in vertical direction
+% dt/dx
+Kv = K * diag(los_len);
 
 S = diag(1./err(16:end-16).^2); % inverse of error covariance
 
-Kk =  K*diag(los_len.*x)*P;
+% dt/da
+Ka =  K*diag(los_len.*x)*P; 
 
-A_alpha = (Kk'*S*Kk+eye(length(theta)))\(Kk'*S*Kv); % AK of alpha
+A_alpha = (Ka'*S*Ka+eye(length(theta)))\(Ka'*S*Kv); % AK of alpha
 
 A_layer = diag(x)*P*A_alpha; % layer-wise AK
 

@@ -1,4 +1,4 @@
-function [X2 X3] = jacfun_dr(theta,d,P,varargin)
+function [X2 X3 K1] = jacfun_dr(theta,d,P,varargin)
 % [J J2] = jacfun_dr(theta,P,d,varargin)
 %
 % J: [nwl k] (reduced)
@@ -51,7 +51,9 @@ I = eye(sum(d));
 I = [I zeros(sum(d),4)];
 X2 = [X2; I];
 
-
-
+if (nargout==3)
+    K1 = reshape(X3,size(X3,1),length(geo.center_alts),length(invgas));
+    K1 = squeeze(K1(:,:,1)); 
+end
 
 

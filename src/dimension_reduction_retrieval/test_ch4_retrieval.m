@@ -7,10 +7,16 @@ voigt_path = '/home/tukiains/data/voigt_shapes_2016/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
-% file to process
-mfile = [pathstr, '/../input_data/ftir_spectra/so20140508s0eaaa.0061'];
+% all files in input folder
+prefix = [pathstr,'/../input_data/ftir_spectra/'];
+mfiles = dir([prefix,'so*']);
+mfiles = struct2cell(mfiles);
+mfiles = mfiles(1,:);
 
-%number of components
+n = 7;
+mfile = [prefix mfiles{n}]
+
+% number of components
 k = 3;
 
 % levmar solution only (no mcmc)?
@@ -51,20 +57,23 @@ end
 plot(out.geo.layer_dens.ch4./out.geo.air,out.geo.center_alts,'b--','linewidth',2)
 
 % scaled prior
-plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1),out.geo.center_alts,'b-','linewidth',2)
+%plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1),out.geo.center_alts,'b-','linewidth',2)
 
 % aircore
 ac_file = get_aircore_file(get_date(mfile),[pathstr, '/../input_data/aircore/']);
-if (exist(ac_file)==2)
-    [co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(ac_file);
-    plot(ch4./1e9,alt,'r-','linewidth',2)
-end
 
-set(gca,'ylim',[0 45])
+[co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(ac_file);
+ch4 = ch4/1e9;
+plot(ch4,alt,'r-','linewidth',2)
 
-l = legend('prior',str,'prior mean','scaled prior','AirCore')
-legend boxoff
+% smoothed aircore
+ch4_smooth = smooth_ac(ch4,alt,out.A_layer,out.geo.layer_dens.ch4,out.geo.air,out.geo.center_alts);
+plot(ch4_smooth./out.geo.air',out.geo.center_alts,'k-','linewidth',2)
 
+set(gca,'ylim',[0 30])
+set(gca,'xlim',[.2e-6 2.1e-6])
 
+%l = legend('prior',str,'prior mean','scaled prior','AirCore')
+%legend boxoff
 
 

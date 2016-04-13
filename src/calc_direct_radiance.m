@@ -38,6 +38,7 @@ if (nargout>1)
 end    
 
 % derivatives part II: 1 value / wl / gas / layer
+% this derivative is actually dt/d(x*l)
 if (nargout>2)
     K2 = -cmat*diag(t_beam.*base);
     K2 = reshape(K2,ngas,nlay,nwl);

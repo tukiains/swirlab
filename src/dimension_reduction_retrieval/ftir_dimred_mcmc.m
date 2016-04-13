@@ -25,7 +25,7 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.0008;
+noise = 0.0015;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
@@ -35,7 +35,7 @@ f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
 refe = conv(refe,f,'same');
 
 % altitude grid for the retrieval
-alt = create_layering(70,70,1.01);
+alt = create_layering(70,150,1.005);
 
 % direct sun geometry
 [geo,cros] = calc_direct_geo(c_wn,cros,c_alt,wn,gasvec,afile,sza,alt);
@@ -95,6 +95,10 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 % LM-fit of alpha parameters 
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
+% averaging kernel
+[~,~,J] = jacfuni(theta2);
+[out.A_alpha,out.A_layer,out.A_column] = avek(J,P{1},theta2(1:d(1)),geo.layer_dens.ch4,geo.los_lens,varargin{end},geo.altgrid);
+
 % retrieved profiles etc. for output
 out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
 out.dr_lm_theta = theta2;
@@ -118,9 +122,7 @@ if (lis)
     meanupd = @(x,m,i) m + 1./i*(x-m);
     Jm = 0;
     for i=1:100    
-        [~,J1] = jacfuni(mvnorr(1,theta2,cmat2)');
-        J1 = reshape(J1,size(J1,1),length(geo.center_alts),length(invgas));
-        Jsample = squeeze(J1(:,:,1)); % take the first gas
+        [~,~,Jsample] = jacfuni(mvnorr(1,theta2,cmat2)');
         Jm = meanupd(Jsample,Jm,i);
     end
     
@@ -137,12 +139,18 @@ if (lis)
     % complement space
     Po = L*v(:,k+1:end);
     
+    % correction for mean (some problem here)
+    %Phi = L'\v(:,1:k);
+    %x00 = P{1}*Phi'*log(geo.layer_dens.ch4(:));
+
     out.lis_s = diag(s);
     out.lis_P = P(1);
 
 else
     disp('using ordinary dimension reduction')
 end
+
+
 
 %% -------------
 %% MCMC sampling 

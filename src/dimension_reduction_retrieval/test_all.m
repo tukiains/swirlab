@@ -7,7 +7,7 @@ voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
-lm_only = false;
+lm_only = true;
 lis = false;
 k = 3;
 
@@ -20,4 +20,4 @@ for n = 1:length(mfiles)
     out(n) = ftir_dimred_mcmc(voigt_path,mfile(n,:),lm_only,lis,k);
 end
 
-%save('/home/tukiains/Dropbox/Public/ftir_results.mat','out','mfile');
+save('/home/tukiains/Dropbox/Public/ftir_results_lm.mat','out','mfile');
