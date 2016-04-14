@@ -1,5 +1,5 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k)
-% out = ftir_dimred_mcmc(voigt_root_path,mfile)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff)
+% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff)
 %
 
 % date of the measurement
@@ -9,10 +9,10 @@ mdate = get_date(mfile);
 labpath = fileparts(which('calc_direct_geo.m'));
 
 % select window 
-[window,wnrange,gasvec,invgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
+[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
 
 % solar zenith angle
-sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
+out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
 
 % voig path
 voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
@@ -35,10 +35,10 @@ f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
 refe = conv(refe,f,'same');
 
 % altitude grid for the retrieval
-alt = create_layering(70,150,1.005);
+alt = create_layering(70,100,1.05);
 
 % direct sun geometry
-[geo,cros] = calc_direct_geo(c_wn,cros,c_alt,wn,gasvec,afile,sza,alt);
+[geo,cros] = calc_direct_geo(c_wn,cros,c_alt,wn,gasvec,afile,out.sza,alt);
 
 % solar spectrum
 sol = calc_solar_spectrum(wn,[labpath,'/../',solar_line_file]);
@@ -56,18 +56,42 @@ wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L);
 sol_shift = calc_sol_shift(wn,refe,sol,wn_shift,sol_shift_wn);    
 sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 
+% default value for offset 
+offset = 3e-4;
+
+% remove some edges of the fitting window
+ncut = 16;
+
 % input for residual / jacobian calculation
-varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo);
+varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
 
 %% ----------------------------
 %% prior scaling method with LM
 %% ----------------------------
 
+% prior profile of the first gas
+x0 = geo.layer_dens.(char(invgas(1)));
+
 % initial values
-theta0 = [ones(1,length(invgas)), 0.5, 0.5, 0.5, 0.001];
+if (fixoff)
+    theta0 = [ones(1,ninvgas), 0.5, 0.5, 0.5]; % fixed offset
+else
+    theta0 = [ones(1,ninvgas), 0.5, 0.5, 0.5, offset]; % retrieve also offset     
+end
 
 % LM-fit of scaling factors
 [theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
+
+% Averaging kernel (maybe incorrect way?)
+nalt = length(geo.center_alts);
+% use dimension reduction Jacobian function:
+for n=1:ninvgas
+    P(n) = {ones(nalt,1)};
+end
+theta2 = [log(theta(1:ninvgas)); theta(ninvgas+1:end)];
+[~,~,K1] = jacfun_dr(theta2,ones(ninvgas,1),P,varargin);
+
+[out.scaling_A_alpha,out.scaling_A_layer,out.scaling_A_column] = avek_scale(K1,x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
 
 % save results for output
 out.geo = geo;
@@ -79,13 +103,13 @@ out.scaling_residual = r;
 %% ----------------------------------
 
 % number of parameters
-d = [k ones(1,length(invgas)-1)];
+d = [k ones(1,ninvgas-1)];
 
 % truncate prior covariance 
 [P, C, Q] = reduce_dim(invgas,d,geo.center_alts);
 
 % initial values
-theta0 = [zeros(1,sum(d)) theta(end-3:end)'];
+theta0 = [zeros(1,sum(d)) theta(ninvgas+1:end)'];
 npar = length(theta0);
 
 % jacobian and residual functions
@@ -97,7 +121,7 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 
 % averaging kernel
 [~,~,J] = jacfuni(theta2);
-[out.A_alpha,out.A_layer,out.A_column] = avek(J,P{1},theta2(1:d(1)),geo.layer_dens.ch4,geo.los_lens,varargin{end},geo.altgrid);
+[out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
 
 % retrieved profiles etc. for output
 out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
@@ -203,7 +227,7 @@ if (lis)
     A = A + randn(size(A,1),size(Po,2))*Po';
 end
 
-profchain = exp(bsxfun(@plus,A,log(geo.layer_dens.ch4))); % log-normal case
+profchain = exp(bsxfun(@plus,A,log(x0))); % log-normal case
 
 profs = bsxfun(@rdivide,profchain,geo.air);
 

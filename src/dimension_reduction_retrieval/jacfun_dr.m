@@ -1,17 +1,15 @@
 function [X2 X3 K1] = jacfun_dr(theta,d,P,varargin)
-% [J J2] = jacfun_dr(theta,P,d,varargin)
+% [J J2 J_first] = jacfun_dr(theta,P,d,varargin)
 %
 % J: [nwl k] (reduced)
-% J2: [nwl nalt] (full)
+% J2: [nwl (nalt x ngas)] (full)
+% J_first: [nwl nalt] (only the first gas)
 %
 % Jacobian function for dimension reduction
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut] = extract_varargin(varargin);
 
-p1 = theta(end-3);
-p2 = theta(end-2);
-p3 = theta(end-1);
-offset = theta(end);
+[p1,p2,p3,offset] = fetch_params(theta,invgas,offset,d);
 
 % new profile
 dens = redu2full(theta,d,P,invgas,geo.layer_dens);
@@ -36,21 +34,23 @@ end
 
 % base line + offset
 z=1;
-for n = sum(d)+1:sum(d)+4
+for n = sum(d)+1:length(theta)
     X2(:,n) = conv_spectrum(wn,K(:,length(gasvec)+z));
     X2(:,n) = interp1(wn,X2(:,n),wn+wn_shift,'linear','extrap')./err;
     z = z+1;
 end
 
 % remove edges
-X2 = X2(16:end-16,:);
-X3 = X3(16:end-16,:);
+X2 = X2(ncut:end-ncut,:);
+X3 = X3(ncut:end-ncut,:);
 
 % regularization
 I = eye(sum(d));
-I = [I zeros(sum(d),4)];
+nextra = length(theta)-sum(d);
+I = [I zeros(sum(d),nextra)];
 X2 = [X2; I];
 
+% only the first gas
 if (nargout==3)
     K1 = reshape(X3,size(X3,1),length(geo.center_alts),length(invgas));
     K1 = squeeze(K1(:,:,1)); 

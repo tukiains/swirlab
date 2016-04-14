@@ -1,12 +1,11 @@
 function r = resfun(theta,varargin)
-% r=resfuni(theta,varargin)
+% r = resfuni(theta,varargin)
+% residual function of the scaling method
+%
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut] = extract_varargin(varargin);
 
-p1 = theta(end-3);
-p2 = theta(end-2);
-p3 = theta(end-1);
-offset = theta(end);
+[p1,p2,p3,offset] = fetch_params(theta,invgas,offset);
 
 % scale densities:
 dens = geo.layer_dens;
@@ -27,7 +26,7 @@ tc2 = interp1(wn,tc,wn+wn_shift,'linear','extrap');
 r = (tc2(:)-refe(:))./err;
 
 % ignore edges
-r = r(16:end-16);
+r = r(ncut:end-ncut);
 
 
 

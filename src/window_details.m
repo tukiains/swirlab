@@ -1,4 +1,4 @@
-function [window,wnrange,gasvec,invgas,sol_shift_wn,solar_line_file,mindep] = window_details(gas,window_number,varargin)
+function [window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details(gas,window_number,varargin)
 %  [window,wnrange,gasvec,invgas,sol_shift_wn,solar_line_file] = window_details(gas,window_number)
 
 mindep = 0.125;
@@ -107,3 +107,4 @@ end
 
 % retrieve all gases
 invgas = gasvec;
+ninvgas = length(invgas);

@@ -13,7 +13,7 @@ mfiles = dir([prefix,'so*']);
 mfiles = struct2cell(mfiles);
 mfiles = mfiles(1,:);
 
-n = 7;
+n = 1;
 mfile = [prefix mfiles{n}]
 
 % number of components
@@ -25,8 +25,11 @@ lm_only = true;
 % if we run mcmc, should we use likelihood-informed retrieval?
 lis = false;
 
+% fix offset?
+fixo = false;
+
 % retrieve ch4
-out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k);
+out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo);
 
 figure(1)
 clf
@@ -67,7 +70,7 @@ ch4 = ch4/1e9;
 plot(ch4,alt,'r-','linewidth',2)
 
 % smoothed aircore
-ch4_smooth = smooth_ac(ch4,alt,out.A_layer,out.geo.layer_dens.ch4,out.geo.air,out.geo.center_alts);
+[ch4_smooth aci] = smooth_ac(ch4,alt,out.A_layer,out.geo.layer_dens.ch4,out.geo.air,out.geo.center_alts);
 plot(ch4_smooth./out.geo.air',out.geo.center_alts,'k-','linewidth',2)
 
 set(gca,'ylim',[0 30])
@@ -76,4 +79,18 @@ set(gca,'xlim',[.2e-6 2.1e-6])
 %l = legend('prior',str,'prior mean','scaled prior','AirCore')
 %legend boxoff
 
+figure(2)
+hold on
+plot(aci./out.geo.air,out.geo.center_alts,'k-','linewidth',2)
+plot(ch4,alt,'ro')
+
+
+figure(3)
+hold on
+plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1),out.geo.center_alts,'b-','linewidth',2)
+[ch4_smooth aci] = smooth_ac(ch4,alt,out.scaling_A_layer,out.geo.layer_dens.ch4,out.geo.air,out.geo.center_alts);
+plot(ch4,alt,'r-','linewidth',2)
+plot(ch4_smooth./out.geo.air',out.geo.center_alts,'k-','linewidth',2)
+legend('Scaled prior','Aircore','Smoothed Aircore')
+set(gca,'ylim',[0 30])
 

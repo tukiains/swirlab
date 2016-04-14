@@ -1,15 +1,11 @@
 function Ko = jacfun(theta,varargin)
 % K=jacfun(theta,varargin)
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut] = extract_varargin(varargin);
 
-p1 = theta(end-3);
-p2 = theta(end-2);
-p3 = theta(end-1);
-offset = theta(end);
-
-% number of retrieved gases
 ninvgas = length(invgas);
+
+[p1,p2,p3,offset] = fetch_params(theta,invgas,offset);
 
 % scale densities:
 dens = geo.layer_dens;
@@ -20,7 +16,7 @@ end
 % evaluate Jacobian
 [~,K] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
 
-% only retrieved gases
+% retrieved gases
 for n = 1:ninvgas
     ind = find(ismember(gasvec,invgas(n))==1);
     Ko(:,n) = conv_spectrum(wn,K(:,ind));
@@ -28,8 +24,8 @@ for n = 1:ninvgas
     Ko(:,n) = Ko(:,n)./err;
 end
 
-% assumes 4 extra retrieved parameters:
-for n = ninvgas+1:ninvgas+4
+% polynom temrms and possible the offset term
+for n = ninvgas+1:length(theta)
     ind = length(gasvec)+n-ninvgas;
     Ko(:,n) = conv_spectrum(wn,K(:,ind));
     Ko(:,n) = interp1(wn,Ko(:,n),wn + wn_shift, 'linear', 'extrap');
@@ -37,5 +33,5 @@ for n = ninvgas+1:ninvgas+4
 end
 
 % ignore edges
-Ko = Ko(16:end-16,:);
+Ko = Ko(ncut:end-ncut,:);
 
