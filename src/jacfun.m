@@ -9,12 +9,12 @@ ninvgas = length(invgas);
 
 % scale densities:
 dens = geo.layer_dens;
-for n=1:ninvgas
+for n = 1:ninvgas
     dens.(char(invgas(n))) = dens.(char(invgas(n)))*theta(n);
 end
 
 % evaluate Jacobian
-[~,K] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
+[~,K] = calc_direct_radiance(dens,geo.los_lens,gasvec,cros,sol,p1,p2,p3,offset,L);
 
 % retrieved gases
 for n = 1:ninvgas

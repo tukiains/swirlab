@@ -9,12 +9,12 @@ function r = resfun(theta,varargin)
 
 % scale densities:
 dens = geo.layer_dens;
-for n=1:length(invgas)
+for n = 1:length(invgas)
     dens.(char(invgas(n))) = dens.(char(invgas(n)))*theta(n);
 end
 
 % transmission
-t = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
+t = calc_direct_radiance(dens,geo.los_lens,gasvec,cros,sol,p1,p2,p3,offset,L);
 
 % convolution
 tc = conv_spectrum(wn,t);

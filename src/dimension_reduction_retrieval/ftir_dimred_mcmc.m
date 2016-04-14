@@ -11,6 +11,9 @@ labpath = fileparts(which('calc_direct_geo.m'));
 % select window 
 [window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
 
+invgas = {'ch4','h2o'};
+ninvgas = length(invgas);
+
 % solar zenith angle
 out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
 
@@ -19,13 +22,13 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
              int2str(min(window)),'-',int2str(max(window)),'/'];
 
 % cross sections 
-[c_wn,cros,c_alt] = read_cross_sections(gasvec, wnrange, labpath, voigtpath);
+[c_wn,cros_o,c_alt] = read_cross_sections(gasvec, wnrange, labpath, voigtpath);
 
 % ggg prior atmosphere file
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.0015;
+noise = 0.0001;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
@@ -35,10 +38,10 @@ f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
 refe = conv(refe,f,'same');
 
 % altitude grid for the retrieval
-alt = create_layering(70,100,1.05);
+alt = create_layering(70,100,1.00001);
 
 % direct sun geometry
-[geo,cros] = calc_direct_geo(c_wn,cros,c_alt,wn,gasvec,afile,out.sza,alt);
+[geo,cros] = calc_direct_geo(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,alt);
 
 % solar spectrum
 sol = calc_solar_spectrum(wn,[labpath,'/../',solar_line_file]);
@@ -57,10 +60,14 @@ sol_shift = calc_sol_shift(wn,refe,sol,wn_shift,sol_shift_wn);
 sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 
 % default value for offset 
-offset = 3e-4;
+offset = 1e-4;
 
 % remove some edges of the fitting window
 ncut = 16;
+
+% simulated measurement
+[refe, wn_shift, sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec, ...
+                                                  afile,out.sza,L,sol,noise);
 
 % input for residual / jacobian calculation
 varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
@@ -184,7 +191,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 50000;                % number of MCMC laps
+options.nsimu = 100000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
@@ -209,8 +216,10 @@ for i = sum(d)+1:npar
 end
 
 % offset term
-params{end} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
-
+if (not(fixoff))
+    params{end} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
+end
+    
 data.d = d;
 data.P = P;
 data.varargin = varargin;

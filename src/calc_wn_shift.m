@@ -4,7 +4,7 @@ function shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L)
 % finds wavelength shift between data and model by simple scanning
 
 % run forward model
-t = calc_direct_radiance(geo.layer_dens,geo.los_lens,wn,gasvec,cros,sol,1,1,1,0,L); 
+t = calc_direct_radiance(geo.layer_dens,geo.los_lens,gasvec,cros,sol,1,1,1,0,L); 
 
 % convolute
 tc = conv_spectrum(wn,t);

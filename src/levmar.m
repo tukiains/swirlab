@@ -8,7 +8,7 @@ r = feval(resfun, theta0(:), varargin{:}); % residuals
 
 nev    = 1;                           
 
-rss    = sum(r.^2) / (length(r)-length(theta0)-1);
+rss    = sum(r.^2) / (length(r)-length(theta0));
 
 theta  = theta0(:); % initial parameter vector
 lam    = 1e-3;      % initial fudge factor

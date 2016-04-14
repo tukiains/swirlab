@@ -1,5 +1,5 @@
-function [t,varargout] = calc_direct_radiance(layer_dens,los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L)
-% [t,K,K2] = calc_direct_radiance(layer_dens,los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L)
+function [t,varargout] = calc_direct_radiance(layer_dens,los_lens,gasvec,cros,sol,p1,p2,p3,offset,L)
+% [t,K,K2] = calc_direct_radiance(layer_dens,los_lens,gasvec,cros,sol,p1,p2,p3,offset,L)
 
 % km to cm
 c = 1e5;
@@ -33,7 +33,7 @@ if (nargout>1)
     for n=1:ngas
         K(:,n) = -c * squeeze(cros(n,:,:))'*(dens_mat(n,:)'.*los_lens) .*t_beam .* base; % gases
     end
-    K = [K diag(t_beam)*diag(sol)*L ones(length(wn),1)]; % base line
+    K = [K diag(t_beam)*diag(sol)*L ones(length(sol),1)]; % base line
     varargout{1} = K;
 end    
 

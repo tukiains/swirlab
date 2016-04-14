@@ -15,7 +15,7 @@ function [X2 X3 K1] = jacfun_dr(theta,d,P,varargin)
 dens = redu2full(theta,d,P,invgas,geo.layer_dens);
 
 % Jacobian
-[~,K,K2] = calc_direct_radiance(dens,geo.los_lens,wn,gasvec,cros,sol,p1,p2,p3,offset,L);
+[~,K,K2] = calc_direct_radiance(dens,geo.los_lens,gasvec,cros,sol,p1,p2,p3,offset,L);
 
 % gases
 X2 = [];
