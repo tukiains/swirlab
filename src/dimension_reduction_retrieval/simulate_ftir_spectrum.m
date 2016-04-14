@@ -1,4 +1,4 @@
-function [refe sol_shift wn_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,sza,L,sol,noise)
+function [refe sol_shift wn_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,sza,L,sol,noise,varargin)
 
 % a fine grid
 alt = create_layering(70,100,1.00001);
@@ -9,6 +9,14 @@ p1 = 0.21;
 p2 = 0.23;
 p3 = 0.20;
 offset = 2e-4;
+
+% aircore ch4 profile?
+if (nargin>10)
+    [~,~,ac_ch4,~,~,~,~,ac_alt] = read_aircore_sounding(varargin{1});
+    ac_ch4 = ac_ch4/1e9; % ppb -> mole fraction
+    aci = extrapolate_ac(ac_ch4,ac_alt,geo.air,geo.center_alts);
+    geo.layer_dens.ch4 = aci;
+end
 
 % simulate spectrum
 refe = calc_direct_radiance(geo.layer_dens,geo.los_lens,gasvec, ...

@@ -66,8 +66,8 @@ offset = 1e-4;
 ncut = 16;
 
 % simulated measurement
-[refe, wn_shift, sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec, ...
-                                                  afile,out.sza,L,sol,noise);
+ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
+[refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
 
 % input for residual / jacobian calculation
 varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
