@@ -28,7 +28,7 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.0001;
+noise = 0.0015;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
@@ -65,9 +65,9 @@ offset = 1e-4;
 % remove some edges of the fitting window
 ncut = 16;
 
-% simulated measurement
-ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
-[refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
+% simulated measurement:
+%ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
+%[refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
 
 % input for residual / jacobian calculation
 varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
@@ -191,7 +191,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 100000;                % number of MCMC laps
+options.nsimu = 50000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
