@@ -21,5 +21,5 @@ A_alpha = (Ka'*S*Ka+eye(length(theta)))\(Ka'*S*Kv); % AK of alpha
 
 A_layer = diag(x)*P*A_alpha; % layer-wise AK
 
-A_column = A_layer*diff(alt)'; % column-wise AK
-    
+A_column = diff(alt)*A_layer;    
+

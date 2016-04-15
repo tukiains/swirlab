@@ -23,7 +23,7 @@ X3 = [];
 for n = 1:length(invgas)
     ind = find(ismember(gasvec,invgas(n))==1);
     X = squeeze(K2(ind,:,:))';
-    prof = dens.(char(invgas(n))).*geo.los_lens';
+    prof = dens.(char(invgas(n))).*geo.los_lens';    
     for m = 1:size(X,2)
         X(:,m) = conv_spectrum(wn,X(:,m));
         X(:,m) = interp1(wn,X(:,m),wn+wn_shift,'linear','extrap')./err*prof(m);
@@ -52,8 +52,7 @@ X2 = [X2; I];
 
 % only the first gas
 if (nargout==3)
-    K1 = reshape(X3,size(X3,1),length(geo.center_alts),length(invgas));
-    K1 = squeeze(K1(:,:,1)); 
+    K1 = squeeze(K2(1,:,ncut:end-ncut))'; % should scale by density and length?
 end
 
 
