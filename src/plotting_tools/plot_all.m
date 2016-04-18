@@ -6,7 +6,7 @@ clear all
 close all
 
 data = load('/home/tukiains/Dropbox/Public/ftir_results.mat');
-data = load('/home/tukiains/Dropbox/Public/ftir_results_lm.mat');
+%data = load('/home/tukiains/Dropbox/Public/ftir_results_lm.mat');
 %data = load('/home/tukiains/Dropbox/Public/ftir_results_lis_k=6.mat');
 
 ac_path = '/home/tukiains/Documents/MATLAB/swirlab_git/swirlab/input_data/aircore/';
@@ -21,8 +21,8 @@ for n = 1:10;
     out = data.out(n);
     axes(ha(n));
 
-    h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4*scale,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
-    %h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs*scale,[0.025 0.5 0.975]),[.5 .7 .3]);    
+    %h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4*scale,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
+    h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs*scale,[0.025 0.5 0.975]),[.5 .7 .3]);    
 
     set(h2,'facealpha',1)
    
@@ -78,7 +78,6 @@ set(l,'position',[0.5 0.05 0.1 0.02])
 set(l,'fontsize',10)
 legend boxoff
 
-
-print_fig(15,21,'lm_profiles')
+%print_fig(15,21,'mcmc_profiles')
 
 
