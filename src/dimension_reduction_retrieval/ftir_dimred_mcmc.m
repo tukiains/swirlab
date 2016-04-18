@@ -1,5 +1,5 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff)
-% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu)
+% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu)
 %
 
 % date of the measurement
@@ -10,9 +10,6 @@ labpath = fileparts(which('calc_direct_geo.m'));
 
 % select window 
 [window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
-
-invgas = {'ch4','h2o'};
-ninvgas = length(invgas);
 
 % solar zenith angle
 out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
@@ -38,7 +35,7 @@ f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
 refe = conv(refe,f,'same');
 
 % altitude grid for the retrieval
-alt = create_layering(70,100,1.00001);
+alt = create_layering(70,100,1.002);
 
 % direct sun geometry
 [geo,cros] = calc_direct_geo(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,alt);
@@ -65,9 +62,10 @@ offset = 1e-4;
 % remove some edges of the fitting window
 ncut = 16;
 
-% simulated measurement:
-%ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
-%[refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
+if (usesimu) % then simulate measurement
+    ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
+    [refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
+end
 
 % input for residual / jacobian calculation
 varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
@@ -89,15 +87,13 @@ end
 % LM-fit of scaling factors
 [theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
 
-% Averaging kernel (maybe incorrect way?)
+% Averaging kernel. Use dimension reduction Jacobian function.
 nalt = length(geo.center_alts);
-% use dimension reduction Jacobian function:
 for n=1:ninvgas
     P(n) = {ones(nalt,1)};
 end
 theta2 = [log(theta(1:ninvgas)); theta(ninvgas+1:end)];
 [~,~,K1] = jacfun_dr(theta2,ones(ninvgas,1),P,varargin);
-
 [out.scaling_A_alpha,out.scaling_A_layer,out.scaling_A_column] = avek_scale(K1,x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
 
 % save results for output
@@ -181,8 +177,6 @@ else
     disp('using ordinary dimension reduction')
 end
 
-
-
 %% -------------
 %% MCMC sampling 
 %% -------------
@@ -191,7 +185,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 50000;                % number of MCMC laps
+options.nsimu = 100000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window

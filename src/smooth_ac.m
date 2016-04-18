@@ -9,7 +9,7 @@ aci = extrapolate_ac(ac_prof,ac_alt,air,alt);
 ac_smooth = prior(:) + AK*(aci(:)-prior(:));
 
 % remove extrapolated parts?
-if (nargin==7 && varargin(1)==1)
+if (nargin==7 && varargin{1}==1)
 
     ind1 = find(ac_prof(2:end)>0,1,'first');
     ind2 = find(ac_prof>0,1,'last');

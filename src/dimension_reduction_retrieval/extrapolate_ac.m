@@ -12,7 +12,7 @@ p = ac_prof;
 % extrapolate aircore
 pa(1) = max(alt);
 p(1) = 1e-12;
-pa(2) = 35;
+pa(2) = 60;
 p(2) = 1e-12;
 
 % also lower part

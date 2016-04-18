@@ -17,5 +17,6 @@ A_alpha = (Kt'*Ci*Kt)\(Kt'*Ci*Kv); % AK of theta
 
 A_layer = x0(:)*A_alpha; % layer-wise AK
 
-A_column = A_layer*diff(alt)'; % column-wise AK
-    
+A_column = diff(alt)*A_layer; % column-wise AK 
+
+

@@ -8,13 +8,19 @@ voigt_path = '/home/tukiains/data/voigt_shapes_2016/';
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
 % all files in input folder
-prefix = [pathstr,'/../input_data/ftir_spectra/'];
+%prefix = [pathstr,'/../input_data/ftir_spectra/'];
+
+prefix = '/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/20140319/';
+
 mfiles = dir([prefix,'so*']);
 mfiles = struct2cell(mfiles);
 mfiles = mfiles(1,:);
 
-n = 1;
+n = 50;
 mfile = [prefix mfiles{n}]
+
+% use simulated data?
+usesimu = false;
 
 % number of components
 k = 3;
@@ -29,7 +35,7 @@ lis = false;
 fixo = false;
 
 % retrieve ch4
-out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo);
+out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu);
 
 figure(1)
 clf
