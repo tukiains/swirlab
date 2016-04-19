@@ -2,19 +2,8 @@ function [co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(fn
 % [co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(fname)
 %
 
-fid = fopen(fname);
-s = textscan(fid, '%s', 'delimiter', '\n');
-fclose(fid);
-s = s{1};
-
-% number of numerical values in each line
-a = cellfun(@(x) length(str2num(x)),s);
-
-% what we have most are data
-ind = find(a==mode(a(a>0)));
-
-% read data (skip 10 first lines to make sure we dont include any header data)
-data = cell2mat(cellfun(@str2num,s(ind(10:end)),'UniformOutput',false));
+nskip = 2;
+data = read_datafield(fname,nskip);
 
 data(data==99999) = nan;
 
