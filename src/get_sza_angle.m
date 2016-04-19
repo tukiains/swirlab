@@ -13,4 +13,8 @@ runno = str2num(mfile(end-2:end));
 
 ind = find(runs==runno);
 
-sza_out = double(sza(ind(1)));
+if (ind>0)
+    sza_out = double(sza(ind(1)));
+else
+    sza_out = [];
+end
