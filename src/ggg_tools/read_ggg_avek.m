@@ -1,8 +1,6 @@
 function [name,ak,level] = read_ggg_avek(fpath)
 % [name,ak,level] = read_ggg_avek(fpath)
 
-fpath = '/home/tukiains/data/opus/ggg_results/20140319/aks/ch4_6002/';
-
 mfiles = dir([fpath,'/*.aks']);
 
 for n=1:length(mfiles)
