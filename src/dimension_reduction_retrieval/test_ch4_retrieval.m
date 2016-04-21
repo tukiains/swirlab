@@ -85,7 +85,6 @@ hold on
 plot(aci./out.geo.air,out.geo.center_alts,'k-','linewidth',2)
 plot(ch4,alt,'ro')
 
-
 figure(3)
 hold on
 plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1),out.geo.center_alts,'b-','linewidth',2)
@@ -97,26 +96,31 @@ set(gca,'ylim',[0 30])
 
 figure(4);
 clf
-subplot(2,1,1);
+ha = tight_subplot(2,1,[0.05],[0.15 0.01],[0.1 0.01])
+axes(ha(1))
 plot(out.wn,out.t,'linewidth',2,'color',[.3 .3 .3])
-set(gca,'box','on')
-set(gca,'xlim',[min(out.wn) max(out.wn)])
 ylabel('FTIR spectrum')
-set(gca,'xticklabel','')
+set(ha(1),'xticklabel','')
 % lower
-subplot(2,1,2)
+axes(ha(2))
 hold on
 plot(out.wn,out.scaling_residual,'-','linewidth',2,'color', [0.2157 ...
                     0.4941 0.7216]);
 plot(out.wn,out.dr_lm_residual(1:end-4),'-','linewidth',2,'color',[1.0000 ...
                       0.4980         0]);
-set(gca,'xlim',[min(out.wn) max(out.wn)])
-set(gca,'box','on')
+set(ha,'xlim',[min(out.wn) max(out.wn)])
+set(ha,'box','on')
 grid on
 xlabel('Wavenumber [cm^{-1}]')
 ylabel('Residual')
-set(gca,'ylim',[-4 2])
-h=legend('Prior scaling','Profile retrieval')
+set(ha(2),'ylim',[-4 2])
+x = [6003:0.5:6005];
+y = [-4:2:2];
+set(ha,'xtick',x)
+set(ha(2),'xticklabel',x)
+set(ha(2),'ytick',y)
+set(ha(2),'yticklabel',y)
+h = legend('Prior scaling','Profile retrieval')
 set(h,'location','southwest')
 pos = get(h,'position');
 pos(2) = pos(2)-0.01;
