@@ -110,6 +110,9 @@ theta2 = [log(theta(1:ninvgas)); theta(ninvgas+1:end)];
 out.geo = geo;
 out.scaling_factors = theta;
 out.scaling_residual = r;
+out.wn = wn(ncut:end-ncut);
+out.t = refe(ncut:end-ncut);
+out.sol = sol(ncut:end-ncut);
 
 %% ----------------------------------
 %% prior covariance reduction with LM
