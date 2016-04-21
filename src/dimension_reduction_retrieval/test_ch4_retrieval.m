@@ -16,7 +16,7 @@ mfiles = dir([prefix,'so*']);
 mfiles = struct2cell(mfiles);
 mfiles = mfiles(1,:);
 
-n = 9;
+n = 5;
 mfile = [prefix mfiles{n}]
 
 zenlim = 82;
@@ -97,17 +97,19 @@ set(gca,'ylim',[0 30])
 
 figure(4);
 clf
-subplot(3,1,[1:2]);
+subplot(2,1,1);
 plot(out.wn,out.t,'linewidth',2,'color',[.3 .3 .3])
 set(gca,'box','on')
 set(gca,'xlim',[min(out.wn) max(out.wn)])
 ylabel('FTIR spectrum')
 set(gca,'xticklabel','')
 % lower
-subplot(3,1,3)
+subplot(2,1,2)
 hold on
-plot(out.wn,out.scaling_residual,'b-','linewidth',2)
-plot(out.wn,out.dr_lm_residual(1:end-4),'r-','linewidth',2);
+plot(out.wn,out.scaling_residual,'-','linewidth',2,'color', [0.2157 ...
+                    0.4941 0.7216]);
+plot(out.wn,out.dr_lm_residual(1:end-4),'-','linewidth',2,'color',[1.0000 ...
+                      0.4980         0]);
 set(gca,'xlim',[min(out.wn) max(out.wn)])
 set(gca,'box','on')
 grid on
@@ -117,7 +119,7 @@ set(gca,'ylim',[-4 2])
 h=legend('Prior scaling','Profile retrieval')
 set(h,'location','southwest')
 pos = get(h,'position');
-pos(2) = pos(2)-0.03;
+pos(2) = pos(2)-0.01;
 pos(1) = pos(1)+0.02;
 set(h,'fontsize',11)
 set(h,'position',pos)
