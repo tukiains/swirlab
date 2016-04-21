@@ -49,8 +49,7 @@ s = textscan(fid, ...
               '%f32'], ... % aipl
              'headerlines',nheader-1); 
 
-fid = fclose(fid);
-
+fclose(fid);
 
 % screen by sza
 sza = s{8};

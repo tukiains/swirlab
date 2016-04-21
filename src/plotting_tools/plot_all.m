@@ -5,7 +5,8 @@
 clear all
 close all
 
-data = load('/home/tukiains/Dropbox/Public/ftir_results.mat');
+data = load('/home/tukiains/data/dimension_reduction_results/ftir_results_one_from_all.mat');
+%data = load('/home/tukiains/Dropbox/Public/ftir_results.mat');
 %data = load('/home/tukiains/Dropbox/Public/ftir_results_lm.mat');
 %data = load('/home/tukiains/Dropbox/Public/ftir_results_lis_k=6.mat');
 
@@ -21,8 +22,8 @@ for n = 1:10;
     out = data.out(n);
     axes(ha(n));
 
-    %h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4*scale,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
-    h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs*scale,[0.025 0.5 0.975]),[.5 .7 .3]);    
+    h2 = show_lm(out.geo.center_alts,out.geo.layer_dens.ch4*scale,out.geo.air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
+    %h2 = plot_curtain(out.geo.center_alts,plims(out.mcmc_profs*scale,[0.025 0.5 0.975]),[.5 .7 .3]);    
 
     set(h2,'facealpha',1)
    
@@ -56,9 +57,9 @@ for n = 1:10;
 end
 
 set(ha,'ylim',[0 30])
-set(ha,'xlim',[200 2100])
+set(ha,'xlim',[200 2000])
 
-x = 400:400:2000;
+x = 300:300:1800;
 y = 0:10:30;
 
 set(ha,'xtick',x);
@@ -78,6 +79,6 @@ set(l,'position',[0.5 0.05 0.1 0.02])
 set(l,'fontsize',10)
 legend boxoff
 
-%print_fig(15,21,'mcmc_profiles')
+print_fig(15,21,'lm_profiles')
 
 

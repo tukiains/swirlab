@@ -2,9 +2,21 @@
 clear all
 close all
 
+%mdate = '20130903';
+%mdate = '20130905';
+mdate = '20131022';
 %mdate = '20140319';
+%mdate = '20140409';
 %mdate = '20140508';
-mdate = '20141105';
+%mdate = '20140714';
+%mdate = '20140715';
+%mdate = '20140716';
+%mdate = '20140902';
+%mdate = '20141105'; 
+
+
+% read swirlab results
+data = load(['/home/tukiains/data/dimension_reduction_results/retrieved_offset/ftir_results_',mdate,'.mat']);
 
 col_file = ['/home/tukiains/data/opus/ggg_results/',mdate,'/ch4_6002.so',mdate,'.col'];
 ak_path = ['/home/tukiains/data/opus/ggg_results/',mdate,'/aks/ch4_6002/'];
@@ -17,31 +29,31 @@ grl_file = ['/home/tukiains/data/opus/ftir_igrams/aircore/grl_files/so',mdate,'.
 [ggg_ak_name, ggg_ak, ggg_ak_level] = read_ggg_avek(ak_path);
 ggg_ak_level = double(ggg_ak_level);
 
-% read swirlab results
-data = load(['/home/tukiains/Dropbox/Public/ftir_results_',mdate,'_fixo.mat']);
-
 % our zenith angles
 sza = cat(1,data.out.sza);
 
+del = 1e-12;
+
 for n=1:length(sza)
+
     sf(n) = data.out(n).scaling_factors(1);
 
     ak(n,:) = data.out(n).scaling_A_column./diff(data.out(1).geo.altgrid);
-    %ak(n,:) = data.out(n).scaling_A_column;%;./diff(data.out(1).geo.altgrid);
 
     ggg_ind(n) = find(ggg_sza==sza(n),1);
 
 end
 
 % just take ggg data that we have also
+ggg_ak_name = ggg_ak_name(ggg_ind,:);
 ggg_ak = ggg_ak(ggg_ind,:);
 ggg_VSF_ch4 = ggg_VSF_ch4(ggg_ind);
 ggg_OVC_ch4 = ggg_OVC_ch4(ggg_ind);
 ggg_sza = ggg_sza(ggg_ind);
 
-alt = data.out(1).geo.center_alts;
-x0 = data.out(1).geo.layer_dens.ch4;
-air = data.out(1).geo.air;
+alt = data.out(1).geo.center_alts; % altitude vector
+x0 = data.out(1).geo.layer_dens.ch4; % prior
+air = data.out(1).geo.air; % air density
 
 alt_dense = [0:0.01:70];
 x0i = exp(interp1(alt,log(x0),alt_dense,'linear','extrap'));
@@ -133,23 +145,23 @@ clf
 hold on
 
 % swirlab scaling
-plot(sza,ac_col_swirlab,'bo')
-plot(sza,swirlab_col,'b*')
+plot(sza,ac_col_swirlab,'b-o','markerfacecolor','b')
+plot(sza,swirlab_col,'b-*')
 
 %plot(sza,ac_col_swirlab2,'m*')
 
 % ggg scaling
-plot(sza,ac_col_ggg,'go')
-plot(sza,ggg_col,'g*')
+%plot(sza,ac_col_ggg,'go')
+%plot(sza,ggg_col,'g*')
 
 %plot(sza,ggg_col2,'r*')
 
 % swirlab DR
-plot(sza,ac_col_swirlab2,'ro')
-plot(sza,dr_col,'r*')
+plot(sza,ac_col_swirlab2,'r-o','markerfacecolor','r')
+plot(sza,dr_col,'r-*')
 
 set(gca,'xlim',[min(sza) max(sza)])
-h = legend('AirCore (swirlab scaling AK)','swirlab (scaling)','AirCore (GGG AK)','GGG','AirCore (DR AK)','DR-LM')
+%h = legend('AirCore (swirlab scaling AK)','swirlab (scaling)','AirCore (GGG AK)','GGG','AirCore (DR AK)','DR-LM')
 legend boxoff
 set(h,'location','northwest')
 

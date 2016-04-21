@@ -1,5 +1,5 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu)
-% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu,zenlim)
+% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu,zenlim)
 %
 
 % date of the measurement
@@ -14,6 +14,11 @@ labpath = fileparts(which('calc_direct_geo.m'));
 % solar zenith angle
 out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
 
+if (isempty(out.sza) | out.sza>zenlim)
+    disp('Error: cant find solar zenith angle for this scan (or too high)')
+    return
+end
+
 % voig path
 voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
              int2str(min(window)),'-',int2str(max(window)),'/'];
@@ -25,10 +30,15 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.0015;
+noise = 0.001;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
+
+if (isempty(refe))
+    disp('Error: No spectrum')
+    return
+end
 
 % apodization
 f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
@@ -57,7 +67,7 @@ sol_shift = calc_sol_shift(wn,refe,sol,wn_shift,sol_shift_wn);
 sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 
 % default value for offset 
-offset = 1e-4;
+offset = 0;
 
 % remove some edges of the fitting window
 ncut = 16;
@@ -78,7 +88,7 @@ varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,o
 x0 = geo.layer_dens.(char(invgas(1)));
 
 % initial values
-if (fixoff)
+if (fixoff.scale)
     theta0 = [ones(1,ninvgas), 0.5, 0.5, 0.5]; % fixed offset
 else
     theta0 = [ones(1,ninvgas), 0.5, 0.5, 0.5, offset]; % retrieve also offset     
@@ -113,6 +123,12 @@ d = [k ones(1,ninvgas-1)];
 
 % initial values
 theta0 = [zeros(1,sum(d)) theta(ninvgas+1:end)'];
+if (fixoff.scale & not(fixoff.dr))
+    theta0 = theta0(1:end-1);
+elseif (not(fixoff.scale) & fixoff.dr)
+    theta0 = [theta0 offset];
+end
+
 npar = length(theta0);
 
 % jacobian and residual functions
@@ -185,7 +201,7 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = length(r);                  % total number of observations
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 100000;                % number of MCMC laps
+options.nsimu = 50000;                % number of MCMC laps
 options.burnintime = 5000;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
@@ -210,10 +226,16 @@ for i = sum(d)+1:npar
 end
 
 % offset term
-if (not(fixoff))
+if (fixoff.dr & not(fixoff.mcmc)) % 2
+    params{end+1} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
+    npar = npar+1;
+elseif (not(fixoff.dr) & fixoff.mcmc) % 1
+    params = params(1:end-1);
+    npar = npar-1;
+else
     params{end} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
 end
-    
+
 data.d = d;
 data.P = P;
 data.varargin = varargin;

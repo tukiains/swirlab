@@ -97,9 +97,9 @@ switch lower(gas)
       case 3 % suitable ch4 window for profile retrieval
         
         window = [5996 6008];
-        wnrange = [6003 6006.5];
+        wnrange = [6003 6005.5];
         gasvec = {'ch4','h2o'};
-        sol_shift_wn = 6005.84;
+        sol_shift_wn = 6003.56;
         
     end
 

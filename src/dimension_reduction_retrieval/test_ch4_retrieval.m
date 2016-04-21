@@ -10,32 +10,27 @@ voigt_path = '/home/tukiains/data/voigt_shapes_2016/';
 % all files in input folder
 %prefix = [pathstr,'/../input_data/ftir_spectra/'];
 
-prefix = '/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/20140319/';
+prefix = '/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/20130903/';
 
 mfiles = dir([prefix,'so*']);
 mfiles = struct2cell(mfiles);
 mfiles = mfiles(1,:);
 
-n = 50;
+n = 1;
 mfile = [prefix mfiles{n}]
 
-% use simulated data?
+zenlim = 82;
 usesimu = false;
-
-% number of components
-k = 3;
-
-% levmar solution only (no mcmc)?
 lm_only = true;
-
-% if we run mcmc, should we use likelihood-informed retrieval?
 lis = false;
-
-% fix offset?
-fixo = false;
+k = 3;
+% fixed offset?
+fixo.scale = false; 
+fixo.dr = false;
+fixo.mcmc = false;
 
 % retrieve ch4
-out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu);
+out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu,zenlim);
 
 figure(1)
 clf
