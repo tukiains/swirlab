@@ -30,7 +30,7 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.001;
+noise = 0.0015;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
@@ -188,7 +188,7 @@ if (lis)
 
     out.lis_s = diag(s);
     out.lis_P = P(1);
-
+    
 else
     disp('using ordinary dimension reduction')
 end
@@ -226,13 +226,13 @@ for i = sum(d)+1:npar
 end
 
 % offset term
-if (fixoff.dr & not(fixoff.mcmc)) % 2
-    params{end+1} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
+if (fixoff.dr & not(fixoff.mcmc)) 
     npar = npar+1;
-elseif (not(fixoff.dr) & fixoff.mcmc) % 1
-    params = params(1:end-1);
+    params{end+1} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
+elseif (not(fixoff.dr) & fixoff.mcmc) 
     npar = npar-1;
-else
+    params = params(1:end-1);
+elseif (not(fixoff.dr) & not(fixoff.mcmc))
     params{end} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
 end
 

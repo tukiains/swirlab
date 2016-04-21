@@ -32,6 +32,7 @@ for m = 1:length(datez)
     
     g = 1;
     for n = 1:1:length(mfiles)
+
         fname = [prefix,mfiles(n).name];
         temp = ftir_dimred_mcmc(voigt_path,fname,lm_only,lis,k,fixo,usesimu,zenlim);
 
@@ -57,9 +58,11 @@ for m = 1:length(datez)
     end
     
     if (g>1)
-        save(['/home/tukiains/data/dimension_reduction_results/retrieved_offset/ftir_results_',mdate,'.mat'],'out','mfile','mcmc_colu','mcmc_colu_err','mcmc_mean_prof');
-    end
 
-    clear out mfile
+        save(['/home/tukiains/data/dimension_reduction_results/retrieved_offset/ftir_results_',mdate,'.mat'],'out','mfile','mcmc_colu','mcmc_colu_err','mcmc_mean_prof');
+
+        clear out mfile mcmc_colu mcmc_colu_err mcmc_mean_prof
+
+    end
 
 end
