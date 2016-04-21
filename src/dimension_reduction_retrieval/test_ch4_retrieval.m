@@ -104,13 +104,15 @@ set(ha(1),'xticklabel','')
 % lower
 axes(ha(2))
 hold on
+plot([min(out.wn) max(out.wn)],[0 0],'linewidth',2,'color',[.5 .5 .5],'handlevisibility','off')
+
 plot(out.wn,out.scaling_residual,'-','linewidth',2,'color', [0.2157 ...
                     0.4941 0.7216]);
 plot(out.wn,out.dr_lm_residual(1:end-4),'-','linewidth',2,'color',[1.0000 ...
                       0.4980         0]);
 set(ha,'xlim',[min(out.wn) max(out.wn)])
 set(ha,'box','on')
-grid on
+%grid on
 xlabel('Wavenumber [cm^{-1}]')
 ylabel('Residual')
 set(ha(2),'ylim',[-4 2])
@@ -125,7 +127,8 @@ set(h,'location','southwest')
 pos = get(h,'position');
 pos(2) = pos(2)-0.01;
 pos(1) = pos(1)+0.02;
-set(h,'fontsize',11)
 set(h,'position',pos)
 legend boxoff
+set(h,'fontsize',12)
+set(ha,'fontsize',12)
 print_fig(15,10,'resis')
