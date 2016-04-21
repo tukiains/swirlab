@@ -3,20 +3,20 @@ clear all
 close all
 
 % set path for absorption coeffs:
-voigt_path = '/home/tukiains/data/voigt_shapes_2016/';
+voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
 % all files in input folder
-%prefix = [pathstr,'/../input_data/ftir_spectra/'];
-
-prefix = '/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/20130903/';
+%prefix = '/home/tukiains/Dropbox/ftir_spectra/';
+prefix = [pathstr,'/../input_data/ftir_spectra/'];
+%prefix = '/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/20130903/';
 
 mfiles = dir([prefix,'so*']);
 mfiles = struct2cell(mfiles);
 mfiles = mfiles(1,:);
 
-n = 1;
+n = 9;
 mfile = [prefix mfiles{n}]
 
 zenlim = 82;
@@ -66,7 +66,7 @@ plot(out.geo.layer_dens.ch4./out.geo.air,out.geo.center_alts,'b--','linewidth',2
 % aircore
 ac_file = get_aircore_file(get_date(mfile),[pathstr, '/../input_data/aircore/']);
 
-[co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(ac_file);
+[co2,co2e,ch4,ch4e,co,coe,pres,alt,temp,air] = read_aircore_sounding(ac_file{1});
 ch4 = ch4/1e9;
 plot(ch4,alt,'r-','linewidth',2)
 
@@ -95,3 +95,31 @@ plot(ch4_smooth./out.geo.air',out.geo.center_alts,'k-','linewidth',2)
 legend('Scaled prior','Aircore','Smoothed Aircore')
 set(gca,'ylim',[0 30])
 
+figure(4);
+clf
+subplot(3,1,[1:2]);
+plot(out.wn,out.t,'linewidth',2,'color',[.3 .3 .3])
+set(gca,'box','on')
+set(gca,'xlim',[min(out.wn) max(out.wn)])
+ylabel('FTIR spectrum')
+set(gca,'xticklabel','')
+% lower
+subplot(3,1,3)
+hold on
+plot(out.wn,out.scaling_residual,'b-','linewidth',2)
+plot(out.wn,out.dr_lm_residual(1:end-4),'r-','linewidth',2);
+set(gca,'xlim',[min(out.wn) max(out.wn)])
+set(gca,'box','on')
+grid on
+xlabel('Wavenumber [cm^{-1}]')
+ylabel('Residual')
+set(gca,'ylim',[-4 2])
+h=legend('Prior scaling','Profile retrieval')
+set(h,'location','southwest')
+pos = get(h,'position');
+pos(2) = pos(2)-0.03;
+pos(1) = pos(1)+0.02;
+set(h,'fontsize',11)
+set(h,'position',pos)
+legend boxoff
+print_fig(15,10,'resis')
