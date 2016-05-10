@@ -233,9 +233,11 @@ end
 if (fixoff.dr & not(fixoff.mcmc)) 
     npar = npar+1;
     params{end+1} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
+    options.qcov = diag([diag(cmat2);1e-4]);
 elseif (not(fixoff.dr) & fixoff.mcmc) 
     npar = npar-1;
     params = params(1:end-1);
+    options.qcov = diag(diag(cmat2(1:end-1,1:end-1)));    
 elseif (not(fixoff.dr) & not(fixoff.mcmc))
     params{end} = {num2str(npar), 0.001, 0, 1, 0.001, 0.5};
 end
