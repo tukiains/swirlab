@@ -1,7 +1,9 @@
 function a = ggg_ils(apo,ns,freq,grid_step,L,fovd)
 % a = ggg_ils(apo,ns,freq,grid_step,L,fovd)
 
-% FTIR instrument function (windowed), borrowed from GGG
+% FTIR instrument function (windowed)
+% The original version of this function has been in the GGG
+% software by the California Institute of Technology
 %
 % apo = level of apozidataion (1-4)
 % ns = number of points to be calculated
