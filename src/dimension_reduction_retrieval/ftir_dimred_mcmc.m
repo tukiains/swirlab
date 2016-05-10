@@ -127,9 +127,9 @@ d = [k ones(1,ninvgas-1)];
 % initial values
 theta0 = [zeros(1,sum(d)) theta(ninvgas+1:end)'];
 if (fixoff.scale & not(fixoff.dr))
-    theta0 = theta0(1:end-1);
-elseif (not(fixoff.scale) & fixoff.dr)
     theta0 = [theta0 offset];
+elseif (not(fixoff.scale) & fixoff.dr)
+    theta0 = theta0(1:end-1);
 end
 
 npar = length(theta0);
