@@ -52,7 +52,13 @@ X2 = [X2; I];
 
 % only the first gas
 if (nargout==3)
-    K1 = squeeze(K2(1,:,ncut:end-ncut))'; % should scale by density and length?
+    K1 = squeeze(K2(1,:,:));
+    for n = 1:size(K1,1)
+        K1(n,:) = conv_spectrum(wn,K1(n,:));
+        K1(n,:) = interp1(wn,K1(n,:),wn+wn_shift,'linear','extrap');
+    end
+    K1 = K1(:,ncut:end-ncut)';
 end
+
 
 
