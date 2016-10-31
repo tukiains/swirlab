@@ -97,6 +97,8 @@ for gasloop=1:length(gasvec)
     % save results
     cd(output_folder)
     save(savefile,'CS')
+
+    clear filez
     
 end
 
