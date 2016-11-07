@@ -1,19 +1,21 @@
 
 % Example script for creating Voigt line shapes
-% Note: this is terribly slow at the moment and is
-% only practical with narrow wavenumber range
+% Note: this is terribly slow at the moment and
+% only practical with a narrow wavenumber range
 
 clear all
 close all
 
 % ch4 window
-wnrange = [5996 6008];
+%wnrange = [5996 6008];
+%gasvec = {'ch4','h2o'};
 
-% trace gases in this window
-gasvec = {'ch4','h2o'};
+% o2 window
+wnrange = [7870 7890];
+gasvec = {'o2','h2o','co2'};
 
 % what days we create
-mdates = {'20131022','20140319'};
+mdates = {'20140319'};
 
 % set me
 output_root_folder = '/home/tukiains/data/voigt_test/';

@@ -45,7 +45,7 @@ for gasloop=1:length(gasvec)
         % read Q values of this isotope
         qfilee = [hitran_folder,'q_values/',gas,'/',upper(gas),'_',num2str(isot),'.dat'];
 
-        if (isempty(qfilee)==0)
+        if (exist(qfilee)==2)
             
             Q = importdata(qfilee);
             Qt = Q(:,1);

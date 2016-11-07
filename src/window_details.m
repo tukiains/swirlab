@@ -8,7 +8,7 @@ switch lower(gas)
     
   case 'o2'
 
-    window = [7765 8005];
+    window = [7870 7890];
     wnrange = [7870 7889.4];
     gasvec = {'o2','h2o','co2'};
     sol_shift_wn = 7884.82; 
