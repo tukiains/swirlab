@@ -6,6 +6,18 @@ solar_line_file = 'input_data/solar_lines_1500-1700.dat';
 
 switch lower(gas)
     
+  case 'o2'
+
+    window = [7765 8005];
+    wnrange = [7870 7889.4];
+    gasvec = {'o2','h2o','co2'};
+    sol_shift_wn = 7884.82; 
+    solar_line_file = 'input_data/solar_lines_1200-1300.dat';
+
+    invgas = {'o2','h2o'};
+    ninvgas = length(invgas);
+    mindep = 0.05;
+
   case 'co2'
     
     switch window_number
@@ -91,6 +103,9 @@ switch lower(gas)
                 mindep =  0.15;
                 
             end
+
+            invgas = gasvec;
+            ninvgas = length(invgas);
             
         end
         
@@ -99,12 +114,13 @@ switch lower(gas)
         window = [5996 6008];
         wnrange = [6003 6005.5];
         gasvec = {'ch4','h2o'};
-        sol_shift_wn = 6003.56;
-        
+        sol_shift_wn = 6005.85;
+      
+        % retrieve all gases
+        invgas = gasvec;
+        ninvgas = length(invgas);        
+  
     end
 
 end
 
-% retrieve all gases
-invgas = gasvec;
-ninvgas = length(invgas);

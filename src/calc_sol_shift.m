@@ -1,27 +1,32 @@
-function shift = calc_sol_shift(wn,refe,sol,wn_shift,linewn)
-% shift = calc_sol_shift(wn,refe,sol,wn_shift,linewn)
-%
-% finds solar wavelength shift by scanning
+function shift = calc_sol_shift(mfile,wn_shift,labpath,solar_line_file,sol_shift_wn)
 
-sol = conv_spectrum(wn,sol);
+% measurement
+[t,wn] = read_ftir_spectrum(mfile,[sol_shift_wn-5 sol_shift_wn+5]);
+f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
+t = conv(t,f,'same')./max(t);
+t = interp1(wn+wn_shift,t,wn,'linear','extrap');
 
-sol = interp1(wn,sol,wn+wn_shift,'linear','extrap');
+% sol
+sol = calc_solar_spectrum(wn,[labpath,'/../',solar_line_file]);
+f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,2.3923e-3);
+sol = conv(sol,f,'same');
 
-r = refe./max(refe);
+% only the strong peak
+ind = find(wn>sol_shift_wn-0.15 & wn<sol_shift_wn+0.15);
+t = t(ind);
+t = t/max(t);
+wn = wn(ind);
 
-[~,solind] = min(abs(wn-linewn));
-
-ind = find(wn>wn(solind)-0.06 & wn<wn(solind)+0.06);
+sol = sol(ind);
+sol = sol/max(sol);
 
 dl = -0.03:0.0001:0.03;
 
-for n=1:length(dl)
-    sol2 = interp1(wn+dl(n),sol,wn(ind));
-    diffu = sol2-r(ind);
-    diffu = diffu.^2;
-    diffz(n) = sqrt(mean(diffu));
+for n = 1:length(dl)
+    sol2 = interp1(wn+dl(n),sol,wn,'linear','extrap');
+    ss(n) = sum((sol2-t).^2);
 end
 
-ind = find(diffz==min(diffz));
+ind = find(ss==min(ss));
 shift = dl(ind);
 

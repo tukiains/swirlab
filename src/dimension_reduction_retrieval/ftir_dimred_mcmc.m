@@ -63,8 +63,7 @@ L = lagrange(wnref,wns);
 wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L);
 
 % solar wl shift
-sol_shift = calc_sol_shift2(mfile,wn_shift,labpath,solar_line_file); 
-%sol_shift = calc_sol_shift(wn,refe,sol,wn_shift,sol_shift_wn);    
+sol_shift = calc_sol_shift(mfile,wn_shift,labpath,solar_line_file,sol_shift_wn);
 sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 
 % default value for offset 
