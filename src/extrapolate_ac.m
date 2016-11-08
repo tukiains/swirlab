@@ -5,6 +5,7 @@ function aci = extrapolate_ac(ac_prof,ac_alt,air,alt)
 % ac_alt: aircore altitude [km]
 % air: density
 % alt: target altitude
+%
 
 pa = ac_alt;
 p = ac_prof;
@@ -12,8 +13,6 @@ p = ac_prof;
 % extrapolate aircore
 pa(1) = max(alt);
 p(1) = 1e-12;
-pa(2) = 30;
-p(2) = 1e-12;
 
 % also lower part
 pa(end) = 1e-12;
@@ -23,4 +22,9 @@ ind = find(p>0 & pa>0);
 p = p(ind);
 pa = pa(ind);
 
-aci = interp1(pa,p,alt,'linear','extrap').*air;
+% maybe cubic extrapolation is the most
+% reasonable approximation 
+aci = interp1(pa,p,alt,'cubic').*air;
+
+
+
