@@ -141,6 +141,13 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 % LM-fit of alpha parameters 
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
+% update error estimate and retrieve again 
+noise = noise*sqrt(rss2);
+varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
+jacfuni = @(theta0) jacfun_dr(theta0,d,P,varargin);
+resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
+[theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
+
 % averaging kernel
 [~,~,J] = jacfuni(theta2);
 [out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
