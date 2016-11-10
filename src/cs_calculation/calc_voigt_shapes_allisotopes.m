@@ -69,8 +69,6 @@ for gasloop=1:length(gasvec)
 
                 for g = 1:length(c2) % all lines 
                 
-                    ind = findnearest(freq2(g),wn);
-                
                     % all wavenumbers 
                     gridi_ind = 1:length(wn);
                     gridi = wn(gridi_ind);
