@@ -1,4 +1,4 @@
-function out = retrieve_all(voigt_root_path,mfiles,k,fixoff,zenlim)
+function day = retrieve_all(voigt_root_path,mfiles,k,fixoff,zenlim)
 % retrieve_all(voigt_root_path,mfiles,k,fixoff,zenlim)
 %
 
@@ -9,7 +9,7 @@ mdate = get_date(cell2mat(mfiles(1)));
 labpath = fileparts(which('calc_direct_geo.m'));
 
 % select window 
-[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
+[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file] = window_details('ch4',3);
 
 % voigt path
 voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
@@ -20,6 +20,9 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 
 % ggg prior atmosphere file
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
+
+% altitude grid for the retrieval
+alt = create_layering(70,100,1.002);
 
 % retrieve all
 jj = 1;
@@ -52,9 +55,6 @@ for ii=1:length(mfiles)
     f = ggg_ils(2,length(wn),median(wn),median(diff(wn)),45,0);
     refe = conv(refe,f,'same');
     
-    % altitude grid for the retrieval
-    alt = create_layering(70,100,1.002);
-    
     disp('Calculating geometry..')
     % direct sun geometry
     [geo,cros] = calc_direct_geo(c_wn,cros_o,c_alt,wn,gasvec,afile,sza,alt);
@@ -71,7 +71,7 @@ for ii=1:length(mfiles)
     
     disp('Estimating wavelength shift..')
     % wavelength shift
-    wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L);
+    wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L);
     
     disp('Estimating solar shift..')
     % solar wl shift
@@ -104,23 +104,13 @@ for ii=1:length(mfiles)
     % LM-fit of scaling factors
     [theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
     
-    % Averaging kernel. Use dimension reduction Jacobian function.
-    %nalt = length(geo.center_alts);
-    %for n=1:ninvgas
-        %P(n) = {ones(nalt,1)};
-    %end
-    %theta2 = [log(theta(1:ninvgas)); theta(ninvgas+1:end)];
-    %[~,~,K1] = jacfun_dr(theta2,ones(ninvgas,1),P,varargin);
-    %[out(jj).scaling_A_alpha,out(jj).scaling_A_layer,out(jj).scaling_A_column] = avek_scale(K1,x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
-    
     % save results for output
-    out(jj).geo = geo;
-    out(jj).scaling_factors = theta;
-    out(jj).scaling_residual = r;
-    out(jj).wn = wn(ncut:end-ncut);
-    out(jj).t = refe(ncut:end-ncut);
-    out(jj).sol = sol(ncut:end-ncut);
-    
+    day.profiles(jj).scaling_factors = theta;
+    day.profiles(jj).scaling_residual = r;
+    day.profiles(jj).t = refe(ncut:end-ncut);
+    day.profiles(jj).sol_shift = sol_shift;
+    day.profiles(jj).wn_shift = wn_shift;
+
     %% ----------------------------------
     %% prior covariance reduction with LM
     %% ----------------------------------
@@ -157,17 +147,26 @@ for ii=1:length(mfiles)
     
     % averaging kernel
     [~,~,J] = jacfuni(theta2);
-    [out(jj).A_alpha,out(jj).A_layer,out(jj).A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
+    [day.profiles(jj).A_alpha,day.profiles(jj).A_layer,day.profiles(jj).A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
     
     % retrieved profiles etc. for output
-    out(jj).dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
-    out(jj).dr_lm_theta = theta2;
-    out(jj).dr_lm_residual = r2;
-    out(jj).dr_lm_cmat = cmat2;
-    out(jj).dr_pri_C = C;
-    out(jj).dr_lm_P = P;
-    out(jj).dr_k = k;
+    day.profiles(jj).dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
+    day.profiles(jj).dr_lm_theta = theta2;
+    day.profiles(jj).dr_lm_residual = r2;
+    day.profiles(jj).dr_lm_cmat = cmat2;
 
     jj = jj + 1;
     
 end
+
+% 1/day for these:
+day.center_alts = geo.center_alts;
+day.air = geo.air;
+day.altgrid = geo.altgrid;
+day.air = geo.air;
+day.layer_dens = geo.layer_dens;
+day.sol = sol(ncut:end-ncut);
+day.wn = wn(ncut:end-ncut);
+day.dr_pri_C = cell2mat(C(1));
+day.dr_lm_P = cell2mat(P(1));
+day.dr_k = k;

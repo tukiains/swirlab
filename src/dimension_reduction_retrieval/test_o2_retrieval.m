@@ -3,7 +3,7 @@ clear all
 close all
 
 % set path for absorption coeffs:
-voigt_path = '/home/tukiains/data/voigt_shapes/';
+voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
@@ -14,7 +14,7 @@ mfiles = dir([prefix,'so*']);
 mfiles = struct2cell(mfiles);
 mfiles = mfiles(1,:);
 
-n = 1;
+n = 2;
 mfile = [prefix mfiles{n}]
 
 zenlim = 82;
@@ -36,3 +36,12 @@ figure(2)
 clf
 plot(out.wn,out.scaling_residual,'r-')
 
+figure(3)
+plot(out.wn,out.t)
+hold on
+plot(out.wn,out.model,'r-')
+
+figure(4)
+plot(out.wn,out.sol)
+
+out.scaling_factors(1)

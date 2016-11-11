@@ -1,22 +1,62 @@
-function [window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details(gas,window_number,varargin)
+function [window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file] = window_details(gas,window_number,varargin)
 %  [window,wnrange,gasvec,invgas,sol_shift_wn,solar_line_file] = window_details(gas,window_number)
 
-mindep = 0.125;
 solar_line_file = 'input_data/solar_lines_1500-1700.dat';
 
 switch lower(gas)
     
+  case 'co'
+    
+    switch window_number
+        
+      case 1
+        
+        window = [4210 4240];
+        wnrange = [4210 4240];
+        gasvec = {'co'};
+        sol_shift_wn = 4232.83;
+        solar_line_file = 'input_data/solar_lines_2100-2500.dat';
+        
+        invgas = {'co'};
+        ninvgas = length(invgas);
+        
+      case 2
+        
+        window = [4280 4300];
+        wnrange = [4280 4300];
+        gasvec = {'co','ch4','h2o'};
+        sol_shift_wn = 4291.292;
+        solar_line_file = 'input_data/solar_lines_2100-2500.dat';
+        
+        invgas = {'co','ch4','h2o'};
+        ninvgas = length(invgas);
+        
+      case 3
+        
+        window = [2055 2060];
+        wnrange = [2055 2060];
+        gasvec = {'co'};
+        sol_shift_wn = 4291.292;
+        solar_line_file = 'input_data/solar_lines_2100-2500.dat';
+        
+        invgas = {'co'};
+        ninvgas = length(invgas);
+    end
+    
+    
   case 'o2'
-
+    
     window = [7870 7890];
-    wnrange = [7870 7889.4];
-    gasvec = {'o2','h2o','co2'};
-    sol_shift_wn = 7884.82; 
+    %wnrange = [7870 7876];
+    %wnrange = [7872 7875.5];
+    wnrange = [7870 7878];
+    gasvec = {'o2','h2o'};
+    %sol_shift_wn = 7884.81; 
+    sol_shift_wn = 7882.745;
     solar_line_file = 'input_data/solar_lines_1200-1300.dat';
 
     invgas = {'o2','h2o'};
     ninvgas = length(invgas);
-    mindep = 0.05;
 
   case 'co2'
     
@@ -87,20 +127,17 @@ switch lower(gas)
                 
                 gasvec = {'ch4'};
                 wnrange = [5949 5950];
-                mindep =  0.15;
 
               case 5
 
                 gasvec = {'ch4','co2'};
                 wnrange = [5982.5 5984];
                 sol_shift_wn = 5983.535;
-                mindep =  0.18;
                 
               case 6
                 
                 gasvec = {'ch4'};
                 wnrange = [5926 5927];
-                mindep =  0.15;
                 
             end
 

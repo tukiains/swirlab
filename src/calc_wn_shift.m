@@ -1,5 +1,5 @@
-function shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L)
-% calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L)
+function shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L)
+% calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L)
 %
 % finds wavelength shift between data and model by simple scanning
 
@@ -12,7 +12,10 @@ tc = conv_spectrum(wn,t);
 % approximate fit
 tc2 = tc*(tc\refe);
 
-ind = find(tc2<mindep); % investigate only peaks 
+% investigate only 50 smallest points 
+[~,ind] = sort(tc2);
+ind = ind(1:50);
+
 tc3 = tc2(ind);
 refe2 = refe(ind);
 wn2 = wn(ind);

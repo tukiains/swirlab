@@ -9,7 +9,7 @@ mdate = get_date(mfile);
 labpath = fileparts(which('calc_direct_geo.m'));
 
 % select window 
-[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details('ch4',3);
+[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file] = window_details('ch4',3);
 
 % solar zenith angle
 out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
@@ -60,7 +60,7 @@ wnref = wns([1,fix(end/2),end]);
 L = lagrange(wnref,wns);
 
 % wavelength shift
-wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L);
+wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L);
 
 % solar wl shift
 sol_shift = calc_sol_shift(mfile,wn_shift,labpath,solar_line_file,sol_shift_wn);
@@ -160,6 +160,10 @@ out.dr_lm_cmat = cmat2;
 out.dr_pri_C = C;
 out.dr_lm_P = P;
 out.dr_k = k;
+
+% model at optimum
+err = cell2mat(varargin(11));
+out.dr_fitted_model = out.t + r2(1:end-sum(d)).*err(ncut:end-ncut);
 
 if (lm_only)
     return

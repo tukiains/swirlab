@@ -7,7 +7,7 @@ mdate = get_date(mfile);
 labpath = fileparts(which('calc_direct_geo.m'));
 
 % select window 
-[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file,mindep] = window_details('o2',1);
+[window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file] = window_details('o2',1);
 
 % solar zenith angle
 out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
@@ -58,7 +58,7 @@ wnref = wns([1,fix(end/2),end]);
 L = lagrange(wnref,wns);
 
 % wavelength shift
-wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,mindep,L);
+wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L);
 
 % solar wl shift
 sol_shift = calc_sol_shift(mfile,wn_shift,labpath,solar_line_file,sol_shift_wn);
@@ -81,7 +81,7 @@ varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,o
 x0 = geo.layer_dens.(char(invgas(1)));
 
 % initial values
-theta0 = [ones(1,ninvgas), 0.5, 0.5, 0.5, offset]; % must also retrieve offset
+theta0 = [ones(1,ninvgas), 0.5, 0.5, 0.5]; % must also retrieve offset
 
 % LM-fit of scaling factors
 [theta,cmat,rss,r] = levmar(@resfun,@jacfun,theta0,varargin);
@@ -93,4 +93,8 @@ out.scaling_residual = r;
 out.wn = wn(ncut:end-ncut);
 out.t = refe(ncut:end-ncut);
 out.sol = sol(ncut:end-ncut);
+
+% model at optimum
+err = cell2mat(varargin(11));
+out.model = out.t + r.*err(ncut:end-ncut);
 
