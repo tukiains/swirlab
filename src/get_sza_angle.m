@@ -18,4 +18,5 @@ if (ind>0)
     hour_out = double(hour(ind(1)));
 else
     sza_out = [];
+    hour_out = [];
 end
