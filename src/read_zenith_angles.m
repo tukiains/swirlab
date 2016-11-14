@@ -1,5 +1,4 @@
-function [sza names year lat lon alt tins pins hins tout pout hout sia] = ...
-        read_zenith_angles(fname,zenlim)
+function [sza names year day hour lat lon alt tins pins hins tout pout hout sia] = read_zenith_angles(fname,zenlim)
 %
 % read GGG2014 .grl file
     

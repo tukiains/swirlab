@@ -31,7 +31,7 @@ for ii=1:length(mfiles)
     mfile = cell2mat(mfiles(ii));
 
     % solar zenith angle
-    sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl']);
+    [sza hour] = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl']);
 
     if (isempty(sza) | sza>zenlim)
         disp('Error: cant find solar zenith angle for this scan (or too high)')
@@ -154,6 +154,8 @@ for ii=1:length(mfiles)
     day.profiles(jj).dr_lm_theta = theta2;
     day.profiles(jj).dr_lm_residual = r2;
     day.profiles(jj).dr_lm_cmat = cmat2;
+    day.profiles(jj).sza = sza;
+    day.profiles(jj).hour = hour;
 
     jj = jj + 1;
     
