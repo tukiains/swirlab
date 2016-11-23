@@ -18,8 +18,8 @@ fn = @(fields,name) find(ismember(fields,name)==1);
 
 for n=1:length(s)
     
-    a = str2num(cell2mat(s(n)));
-
+    a = str2num(s{n});
+    
     alt(n) = a(fn(fields, 'Height')) - altcorr; 
     T(n)   = a(fn(fields, 'Temp'));
     P(n)   = a(fn(fields, 'Pres')) * 1013.25;

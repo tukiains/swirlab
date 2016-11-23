@@ -5,7 +5,7 @@ files = struct2cell(files);
 files = files(1,:);
 
 % join path and file name
-for n=1:length(files)
-    files(n) = {[dir_to_path,cell2mat(files(n))]};
+for n = 1:length(files)
+    files(n) = {[dir_to_path,files{n}]};
 end
 

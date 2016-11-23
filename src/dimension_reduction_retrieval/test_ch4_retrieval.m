@@ -9,13 +9,10 @@ voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 
 % all files in input folder
 prefix = [pathstr,'/../input_data/ftir_spectra/'];
+mfiles = list_files(prefix,'so*');
 
-mfiles = dir([prefix,'so*']);
-mfiles = struct2cell(mfiles);
-mfiles = mfiles(1,:);
-
-n = 1;
-mfile = [prefix mfiles{n}]
+% try some 
+mfile = mfiles{1};
 
 zenlim = 82;
 usesimu = false;
