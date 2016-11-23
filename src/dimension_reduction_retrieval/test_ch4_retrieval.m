@@ -30,8 +30,8 @@ fixo.mcmc = false;
 % retrieve ch4
 out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu,zenlim);
 
-% also o2
-out_o2 = o2_retrieval(voigt_path,mfile,zenlim);
+% o2 retrieval is experimental
+%out_o2 = o2_retrieval(voigt_path,mfile,zenlim);
 
 figure(1)
 clf

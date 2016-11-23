@@ -24,7 +24,7 @@ pa = pa(ind);
 
 % maybe cubic extrapolation is the most
 % reasonable approximation 
-aci = interp1(pa,p,alt,'cubic').*air;
+aci = interp1(pa,p,alt,'pchip').*air;
 
 
 
