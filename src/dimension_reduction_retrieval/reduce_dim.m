@@ -7,9 +7,9 @@ for n=1:length(invgas)
     
     if (strcmp(invgas(n),'ch4')==1) 
         l = 12; % correlation length
-        mu1 = 27; 
+        mu1 = 28; 
         mu2 = 5;  
-        sigma1 = 9; 
+        sigma1 = 11; 
         sigma2 = 6;
         d1 = 0.4;
         d2 = 0.01;        

@@ -10,7 +10,7 @@ geo = calc_direct_lengths(sza,re,altgrid);
 geo.center_alts = calc_center_alts(altgrid);
 
 % interpolate cros sections
-cros = interpolate_cross(c_alt, c_wn, cros, geo.center_alts, wn);
+cros = interpolate_cross(c_alt,c_wn,cros,geo.center_alts,wn);
 
 % atmosphere
 altcorr = 0.184; % Sodankylä altitude
@@ -22,3 +22,9 @@ end
 % air density
 geo.air = exp(interp1(altgrid,log(air),geo.center_alts));
 
+% new ch4 prior for sodankyla:
+% ----------------------------
+ch4ind = find(ismember(gasvec,'ch4'));
+if (ch4ind>0)
+    geo = replace_ch4_prior(afile,geo);
+end
