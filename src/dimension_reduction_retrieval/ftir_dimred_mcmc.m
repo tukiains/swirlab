@@ -150,7 +150,7 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 
 % averaging kernel
 [~,~,J] = jacfuni(theta2);
-[out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
+[out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
 
 % retrieved profiles etc. for output
 out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens,geo.air);

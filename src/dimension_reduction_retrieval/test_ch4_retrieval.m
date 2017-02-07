@@ -70,7 +70,7 @@ plot(ch4,alt,'r-','linewidth',2)
 
 % smoothed aircore
 [ch4_smooth aci] = smooth_ac(ch4,alt,out.A_layer,out.geo.layer_dens.ch4,out.geo.air,out.geo.center_alts);
-plot(ch4_smooth./out.geo.air',out.geo.center_alts,'k-','linewidth',2)
+plot(ch4_smooth/1e9,out.geo.center_alts,'k-','linewidth',2)
 
 set(gca,'ylim',[0 70])
 set(gca,'xlim',[0 2.1e-6])

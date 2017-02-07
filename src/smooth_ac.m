@@ -3,10 +3,11 @@ function [ac_smooth aci] = smooth_ac(ac_prof,ac_alt,AK,prior,air,alt,varargin)
 % if remove_extras = 1, values above and below original aircore are nan 
 
 % extrapolate aircore
-aci = extrapolate_ac(ac_prof,ac_alt,air,alt);
+aci = extrapolate_ac(ac_prof,ac_alt,air,alt)./air*1e9; % ppb
 
-% smooth 
-ac_smooth = prior(:) + AK*(aci(:)-prior(:));
+prior = prior./air*1e9; % ppb
+
+ac_smooth = prior(:) + AK*(aci(:)-prior(:)); % ppb
 
 % remove extrapolated parts?
 if (nargin==7 && varargin{1}==1)

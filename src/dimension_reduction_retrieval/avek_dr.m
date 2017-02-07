@@ -1,4 +1,4 @@
-function [A_alpha,A_layer,A_column] = avek_dr(K,P,theta,x0,los_len,err,alt,ncut)
+function [A_alpha,A_layer,A_column] = avek_dr(K,P,theta,x0,los_len,err,alt,ncut,air)
 
 % K: Jacobian
 % P: projection matrix
@@ -6,21 +6,21 @@ function [A_alpha,A_layer,A_column] = avek_dr(K,P,theta,x0,los_len,err,alt,ncut)
 % los_len: lengths of layers
 % err: measurement error vector
 % alt: altitude grid
+% air: air profile to covert
 
-%x = exp(P*theta(:)).*x0(:); % current profile
-x = P*theta(:) + x0(:);
+x = P*theta(:) + x0(:); % current profile
 
 % dt/dx
-Kv = K * diag(los_len);
+Kv = K * diag(los_len.*air'/1e9); % -> into ppb space?
 
 S = diag(1./err(ncut:end-ncut).^2); % inverse of error covariance
 
 % dt/da
-Ka =  K*diag(los_len.*x)*P; 
+Ka =  K*diag(los_len.*air'/1e9)*P; % ppb space
 
 A_alpha = (Ka'*S*Ka+eye(length(theta)))\(Ka'*S*Kv); % AK of alpha
 
-A_layer = diag(x)*P*A_alpha; % layer-wise AK
+A_layer = P*A_alpha; % layer-wise AK
 
 A_column = diff(alt)*A_layer;    
 
