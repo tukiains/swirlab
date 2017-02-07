@@ -13,3 +13,5 @@ swirlab uses MCMC Matlab toolbox by Marko Laine.
 It is available at: http://helios.fmi.fi/~lainema/
 
 test_ch4_retrieval.m is a simple example how to run swirlab. 
+
+Use matlab version 2016b or newer!
