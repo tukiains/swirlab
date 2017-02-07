@@ -72,6 +72,6 @@ plot(ch4,alt,'r-','linewidth',2)
 [ch4_smooth aci] = smooth_ac(ch4,alt,out.A_layer,out.geo.layer_dens.ch4,out.geo.air,out.geo.center_alts);
 plot(ch4_smooth./out.geo.air',out.geo.center_alts,'k-','linewidth',2)
 
-set(gca,'ylim',[0 30])
-set(gca,'xlim',[.2e-6 2.1e-6])
+set(gca,'ylim',[0 70])
+set(gca,'xlim',[0 2.1e-6])
 

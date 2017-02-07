@@ -8,7 +8,7 @@ function r = resfun_dr(theta,d,P,varargin)
 [p1,p2,p3,offset] = fetch_params(theta,invgas,offset,d);
 
 % new profile
-dens = redu2full(theta,d,P,invgas,geo.layer_dens);
+dens = redu2full(theta,d,P,invgas,geo.layer_dens,geo.air);
 
 % transmission
 t = calc_direct_radiance(dens,geo.los_lens,gasvec,cros,sol,p1,p2,p3,offset,L);

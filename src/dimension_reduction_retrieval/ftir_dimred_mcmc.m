@@ -153,7 +153,7 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 [out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
 
 % retrieved profiles etc. for output
-out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
+out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens,geo.air);
 out.dr_lm_theta = theta2;
 out.dr_lm_residual = r2;
 out.dr_lm_cmat = cmat2;
@@ -268,9 +268,11 @@ if (lis)
     A = A + randn(size(A,1),size(Po,2))*Po';
 end
 
-profchain = exp(bsxfun(@plus,A,log(x0))); % log-normal case
+mix = A' + x0(:)./geo.air'*1e9; % gaussian ppb covariance
+profs = mix'/1e9;
 
-profs = bsxfun(@rdivide,profchain,geo.air);
+%profchain = exp(bsxfun(@plus,A,log(x0))); % log-normal case
+%profs = bsxfun(@rdivide,profchain,geo.air);
 
 % save for output
 out.mcmc_profs = profs;

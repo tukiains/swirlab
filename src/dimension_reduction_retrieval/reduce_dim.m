@@ -4,15 +4,17 @@ function [P, C, Q] = reduce_dim(invgas,d,alt)
 % Dimensionality reduction for the prior covariance matrix
 
 for n=1:length(invgas)
+
+    % new covariance marix for ch4 in ppb:
     
     if (strcmp(invgas(n),'ch4')==1) 
-        l = 12; % correlation length
-        mu1 = 28; 
-        mu2 = 5;  
-        sigma1 = 11; 
-        sigma2 = 6;
-        d1 = 0.4;
-        d2 = 0.01;        
+        l = 12;
+        mu1 = 30;
+        mu2 = 0;
+        sigma1 = 20;
+        sigma2 = 0;
+        d1 = 2e2;
+        d2 = 0;
         Cor = create_cov(alt,mu1,mu2,sigma1,sigma2,d1,d2,l);
     else
         Cor = diag(ones(length(alt),1))/1000;

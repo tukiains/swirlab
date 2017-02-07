@@ -150,7 +150,7 @@ for ii=1:length(mfiles)
     [day.profiles(jj).A_alpha,day.profiles(jj).A_layer,day.profiles(jj).A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
     
     % retrieved profiles etc. for output
-    day.profiles(jj).dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens);
+    day.profiles(jj).dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens,geo.air);
     day.profiles(jj).dr_lm_theta = theta2;
     day.profiles(jj).dr_lm_residual = r2;
     day.profiles(jj).dr_lm_cmat = cmat2;

@@ -12,7 +12,7 @@ function [X2 X3 K1] = jacfun_dr(theta,d,P,varargin)
 [p1,p2,p3,offset] = fetch_params(theta,invgas,offset,d);
 
 % new profile
-dens = redu2full(theta,d,P,invgas,geo.layer_dens);
+dens = redu2full(theta,d,P,invgas,geo.layer_dens,geo.air);
 
 % Jacobian
 [~,K,K2] = calc_direct_radiance(dens,geo.los_lens,gasvec,cros,sol,p1,p2,p3,offset,L);
@@ -23,7 +23,8 @@ X3 = [];
 for n = 1:length(invgas)
     ind = find(ismember(gasvec,invgas(n))==1);
     X = squeeze(K2(ind,:,:))';
-    prof = dens.(char(invgas(n))).*geo.los_lens';    
+    %prof = dens.(char(invgas(n))).*geo.los_lens';
+    prof = geo.air .* geo.los_lens' / 1e9; % gaussian ppb covariance
     for m = 1:size(X,2)
         X(:,m) = conv_spectrum(wn,X(:,m));
         X(:,m) = interp1(wn,X(:,m),wn+wn_shift,'linear','extrap')./err*prof(m);
