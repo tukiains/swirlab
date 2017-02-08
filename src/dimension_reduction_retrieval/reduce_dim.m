@@ -9,12 +9,12 @@ for n=1:length(invgas)
     
     if (strcmp(invgas(n),'ch4')==1) 
         l = 12;
-        mu1 = 30;
-        mu2 = 0;
-        sigma1 = 20;
-        sigma2 = 0;
-        d1 = 2e2;
-        d2 = 0;
+        mu1 = 25;
+        mu2 = 3;
+        sigma1 = 10;
+        sigma2 = 50;
+        d1 = 4e2;
+        d2 = 20;
         Cor = create_cov(alt,mu1,mu2,sigma1,sigma2,d1,d2,l);
     else
         Cor = diag(ones(length(alt),1))/1000;

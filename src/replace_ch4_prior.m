@@ -4,7 +4,7 @@ date = get_date(afile);
 ind = strfind(afile,'input_data');
 
 month = str2num(date(5:6));
-if (month>=5 & month<=8)
+if (month>=4 & month<=9)
     season = '_summer';
 elseif (month>=1 & month<=3)    
     season = '_vortex';

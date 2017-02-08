@@ -147,7 +147,7 @@ for ii=1:length(mfiles)
     
     % averaging kernel
     [~,~,J] = jacfuni(theta2);
-    [day.profiles(jj).A_alpha,day.profiles(jj).A_layer,day.profiles(jj).A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
+    [day.profiles(jj).A_alpha,day.profiles(jj).A_layer,day.profiles(jj).A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
     
     % retrieved profiles etc. for output
     day.profiles(jj).dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens,geo.air);
