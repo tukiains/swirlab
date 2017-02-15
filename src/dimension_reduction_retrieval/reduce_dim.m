@@ -13,9 +13,10 @@ for n=1:length(invgas)
         mu2 = 3;
         sigma1 = 10;
         sigma2 = 50;
-        d1 = 4e2;
-        d2 = 20;
+        d1 = 3e2;
+        d2 = 10;
         Cor = create_cov(alt,mu1,mu2,sigma1,sigma2,d1,d2,l);
+
     else
         Cor = diag(ones(length(alt),1))/1000;
     end
