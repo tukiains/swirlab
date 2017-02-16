@@ -11,6 +11,5 @@ pa = C*a';
 % matlab 2016b style: 
 
 mix = pa + x0(:)./air'*1e9;
-mix = mix/1e9;
 
 out = plot_curtain(alt,plims(mix',[0.025 0.5 0.975]),[0.53 0.81 0.98]);

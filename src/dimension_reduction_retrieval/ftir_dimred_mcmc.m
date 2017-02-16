@@ -114,6 +114,8 @@ out.wn = wn(ncut:end-ncut);
 out.t = refe(ncut:end-ncut);
 out.sol = sol(ncut:end-ncut);
 
+nobs = length(r); % number of true wavelengths
+
 %% ----------------------------------
 %% prior covariance reduction with LM
 %% ----------------------------------
@@ -149,6 +151,7 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
 % averaging kernel
+
 [~,~,J] = jacfuni(theta2);
 [out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
 
@@ -174,6 +177,7 @@ end
 %% --------------------------
 
 if (lis)
+    
     disp('using likelihood-informed dimension reduction')
     % sample Jacobian around MAP
     meanupd = @(x,m,i) m + 1./i*(x-m);
@@ -182,24 +186,39 @@ if (lis)
         [~,~,Jsample] = jacfuni(mvnorr(1,theta2,cmat2)');
         Jm = meanupd(Jsample,Jm,i);
     end
-    
-    % cholesky of prior covariance
-    cov1 = C{1};
-    L = chol(cov1+eye(size(cov1))*1e-10,'lower');
 
-    Js = Jm*L;
+    Jm = Jm*diag(geo.air/1e9); % into ppb space
+
+    % measurement error
+    Ly = diag(ones(nobs,1)./noise); % Cy = inv(Ly'*Ly)
+    
+    % ace profiles over sodankyla
+    ace = load([labpath, '/../input_data/','ace_prior']);
+    ace_profs = interp1(ace.alt,ace.acei,geo.center_alts,'linear','extrap');
+
+    % create prior covariance
+    cov1 = double(cov(ace_profs'));
+
+    % cholesky of prior covariance    
+    Lx = inv(chol(cov1+eye(size(cov1))*0.1,'lower')); % Cx = inv(Lx'*Lx);
+
+    % scaled jacobian
+    Js = Ly*Jm/Lx;
     
     % svd of that
     [~,s,v] = svd(Js,0);
-    P(1) = {L*v(:,1:k)}; % projection matrix
 
-    % complement space
-    Po = L*v(:,k+1:end);
+    % how many components is needed?
+    k_old = k;
+    k = length(find(diag(s)>1))+1;
+    d(1) = k;
+    npar = npar - (k_old-k);
     
-    % correction for mean (some problem here)
-    %Phi = L'\v(:,1:k);
-    %x00 = P{1}*Phi'*log(geo.layer_dens.ch4(:));
-
+    P(1) = {Lx\v(:,1:k)}; % projection matrix
+    
+    % complement space
+    Po = Lx\v(:,k+1:end);
+    
     out.lis_s = diag(s);
     out.lis_P = P(1);
     
@@ -213,7 +232,7 @@ end
 
 model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
-model.N = length(r);                  % total number of observations
+model.N = nobs;                       % number of observations (true wavelengths)
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
 options.nsimu = 50000;                % number of MCMC laps
 options.burnintime = 5000;
@@ -235,8 +254,10 @@ for i = 1:sum(d)
 end
 
 % parametrized polynomial terms
+g = 2;
 for i = sum(d)+1:npar
-    params{i} = {num2str(i), theta2(i), 0, 1, 0.2, 1};
+    params{i} = {num2str(i), theta2(end-g), 0, 1, 0.2, 1};
+    g = g-1;
 end
 
 % offset term
@@ -262,17 +283,11 @@ data.varargin = varargin;
 % retrieved profiles
 redchain = chain(end-20000:end,:); % take last 20k samples?
 
-A = redchain(:,1:d(1))*P{1}';
+fullchain = redchain(:,1:d(1))*P{1}' + x0(:)'./geo.air*1e9;
 
 if (lis)
-    A = A + randn(size(A,1),size(Po,2))*Po';
+    fullchain = fullchain + randn(size(fullchain,1),size(Po,2))*Po';
 end
-
-mix = A' + x0(:)./geo.air'*1e9; % gaussian ppb covariance
-profs = mix'/1e9;
-
-%profchain = exp(bsxfun(@plus,A,log(x0))); % log-normal case
-%profs = bsxfun(@rdivide,profchain,geo.air);
 
 % save for output
 out.mcmc_profs = profs;
