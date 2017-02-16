@@ -8,17 +8,16 @@ voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
 % all files in input folder
-%prefix = [pathstr,'/../input_data/ftir_spectra/'];
-prefix = '/media/tukiains/3b48ca75-37ff-42ba-ab71-b78f39cd9a79/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/20140508/';
+prefix = [pathstr,'/../input_data/ftir_spectra/'];
 mfiles = list_files(prefix,'so*');
 
 % try some 
-mfile = mfiles{fix(length(mfiles)/2)};
+mfile = mfiles{2};
 
-zenlim = 85;
+zenlim = 82;
 usesimu = false;
-lm_only = false;
-lis = true;
+lm_only = true;
+lis = false;
 k = 3;
 % fixed offset?
 fixo.scale = true; 
