@@ -22,4 +22,3 @@ A_alpha2 = (Ka'*S*Ka+eye(length(theta)))\(Ka'*S*Kv2);
 A_layer2 = diag(air'/1e9)*P*A_alpha2;
 A_column = diff(alt)*A_layer2; % be careful when interpreting this
 
-%keyboard
