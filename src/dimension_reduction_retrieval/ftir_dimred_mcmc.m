@@ -167,6 +167,7 @@ out.dr_k = k;
 % model at optimum
 err = cell2mat(varargin(11));
 out.dr_fitted_model = out.t + r2(1:end-sum(d)).*err(ncut:end-ncut);
+out.version = swirlab_version();
 
 if (lm_only)
     return
@@ -295,3 +296,4 @@ out.mcmc_res = res;
 out.mcmc_chain = chain;
 out.mcmc_s2chain = s2chain;
 out.mcmc_sschain = sschain;
+

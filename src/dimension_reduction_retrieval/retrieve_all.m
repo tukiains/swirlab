@@ -172,3 +172,4 @@ day.wn = wn(ncut:end-ncut);
 day.dr_pri_C = cell2mat(C(1));
 day.dr_lm_P = cell2mat(P(1));
 day.dr_k = k;
+day.version = swirlab_version();
