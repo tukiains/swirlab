@@ -291,7 +291,7 @@ if (lis)
 end
 
 % save for output
-out.mcmc_profs = profs;
+out.mcmc_profs = fullchain;
 out.mcmc_res = res;
 out.mcmc_chain = chain;
 out.mcmc_s2chain = s2chain;
