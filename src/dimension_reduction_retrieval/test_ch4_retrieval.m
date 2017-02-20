@@ -30,6 +30,7 @@ out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu,zenlim);
 air = out.geo.air;
 alts = out.geo.center_alts;
 x0 = out.geo.layer_dens.ch4;
+wn = out.wn;
 
 % o2 retrieval is experimental
 %out_o2 = o2_retrieval(voigt_path,mfile,zenlim);
@@ -83,5 +84,29 @@ plot(ch4_smooth,out.geo.center_alts,'k-','linewidth',2)
 
 set(gca,'ylim',[0 70])
 set(gca,'xlim',[0 2100])
+ylabel('Altitude [km]')
+xlabel('CH4 [ppb]')
+
+figure(2)
+clf
+subplot(2,1,1)
+hold on
+plot(wn,out.t,'k-')
+plot(wn,out.dr_fitted_model,'ro','markerfacecolor','r','markersize',4)
+set(gca,'xlim',[min(wn) max(wn)])
+grid on
+ylabel('Transmittance')
+xlabel('Wavenumber [cm^{-1}]')
+h = legend('Measurement','Model at optimum')
+set(h,'location','southeast')
+legend boxoff
+subplot(2,1,2)
+hold on
+plot(wn,out.dr_lm_residual(1:length(wn)),'k-')
+set(gca,'xlim',[min(wn) max(wn)])
+grid on
+ylabel('Residual')
+xlabel('Wavenumber [cm^{-1}]')
+
 
 
