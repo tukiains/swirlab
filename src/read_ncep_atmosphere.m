@@ -32,6 +32,7 @@ for n=1:length(s)
     o2(n)  = a(fn(fields, '1o2'));
     hf(n)  = a(fn(fields, '1hf'));
     hdo(n) = a(fn(fields, '1hdo'));
+    ocs(n) = a(fn(fields, '1ocs'));
 
 end
 

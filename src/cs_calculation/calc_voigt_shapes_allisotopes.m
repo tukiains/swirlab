@@ -26,6 +26,7 @@ for gasloop=1:length(gasvec)
 
         fname = filez(y,:);
         ind = strfind(fname,'cs');
+        ind = ind(end);
         isot = str2num(fname(ind+2:end-4));
 
         disp(['...Isotopologue: ',int2str(isot)])

@@ -23,4 +23,6 @@ switch molecule
     mass = 19.02148;
   case 'hf'
     mass = 20.01;
+  case 'ocs'
+    mass = 60.075;
 end
