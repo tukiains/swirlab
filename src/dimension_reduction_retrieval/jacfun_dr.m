@@ -1,4 +1,4 @@
-function [X2 X3 K1] = jacfun_dr(theta,d,P,varargin)
+function [X2 X3 K1] = jacfun_dr(theta,d,P,O,varargin)
 % [J J2 J_first] = jacfun_dr(theta,P,d,varargin)
 %
 % J: [nwl k] (reduced)
@@ -7,12 +7,12 @@ function [X2 X3 K1] = jacfun_dr(theta,d,P,varargin)
 %
 % Jacobian function for dimension reduction
 
-[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut] = extract_varargin(varargin);
+[wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut,lis] = extract_varargin(varargin);
 
 [p1,p2,p3,offset] = fetch_params(theta,invgas,offset,d);
 
 % new profile
-dens = redu2full(theta,d,P,invgas,geo.layer_dens,geo.air);
+dens = redu2full(theta,d,P,O,invgas,geo.layer_dens,geo.air,lis);
 
 % Jacobian
 [~,K,K2] = calc_direct_radiance(dens,geo.los_lens,gasvec,cros,sol,p1,p2,p3,offset,L);

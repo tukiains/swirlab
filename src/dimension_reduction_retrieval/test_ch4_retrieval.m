@@ -16,8 +16,8 @@ mfile = mfiles{2};
 
 zenlim = 82;
 usesimu = false;
-lm_only = true;
-lis = false;
+lm_only = false;
+lis = true; % only works with mcmc (if lis = true, set lm_only = false)
 k = 3;
 % fixed offset?
 fixo.scale = true; 
@@ -97,7 +97,7 @@ set(gca,'xlim',[min(wn) max(wn)])
 grid on
 ylabel('Transmittance')
 xlabel('Wavenumber [cm^{-1}]')
-h = legend('Measurement','Model at optimum')
+h = legend('Measurement','Model at optimum');
 set(h,'location','southeast')
 legend boxoff
 subplot(2,1,2)

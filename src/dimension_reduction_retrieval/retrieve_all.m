@@ -68,10 +68,13 @@ for ii=1:length(mfiles)
     wns = (wn-mean(wn))./std(wn);
     wnref = wns([1,fix(end/2),end]);
     L = lagrange(wnref,wns);
+
+    % remove some edges of the fitting window
+    ncut = 16;
     
     disp('Estimating wavelength shift..')
     % wavelength shift
-    wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L);
+    wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L,ncut);
     
     disp('Estimating solar shift..')
     % solar wl shift
@@ -81,11 +84,8 @@ for ii=1:length(mfiles)
     % default value for offset 
     offset = 0;
     
-    % remove some edges of the fitting window
-    ncut = 16;
-    
-    % input for residual / jacobian calculation
-    varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
+     % input for residual / jacobian calculation
+    varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut,false);
     
     %% ----------------------------
     %% prior scaling method with LM
@@ -132,17 +132,17 @@ for ii=1:length(mfiles)
     npar = length(theta0);
     
     % jacobian and residual functions
-    jacfuni = @(theta0) jacfun_dr(theta0,d,P,varargin);
-    resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
+    jacfuni = @(theta0) jacfun_dr(theta0,d,P,0,varargin);
+    resfuni = @(theta0) resfun_dr(theta0,d,P,0,varargin);
     
     % LM-fit of alpha parameters 
     [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
     
     % update error estimate and retrieve again 
     noise = noise*sqrt(rss2);
-    varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
-    jacfuni = @(theta0) jacfun_dr(theta0,d,P,varargin);
-    resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
+    varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut,false);
+    jacfuni = @(theta0) jacfun_dr(theta0,d,P,0,varargin);
+    resfuni = @(theta0) resfun_dr(theta0,d,P,0,varargin);
     [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
     
     % averaging kernel
@@ -150,7 +150,7 @@ for ii=1:length(mfiles)
     [day.profiles(jj).A_alpha,day.profiles(jj).A_layer,day.profiles(jj).A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
     
     % retrieved profiles etc. for output
-    day.profiles(jj).dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens,geo.air);
+    day.profiles(jj).dr_lm_atmos = redu2full(theta2,d,P,0,invgas,geo.layer_dens,geo.air,false);
     day.profiles(jj).dr_lm_theta = theta2;
     day.profiles(jj).dr_lm_residual = r2;
     day.profiles(jj).dr_lm_cmat = cmat2;

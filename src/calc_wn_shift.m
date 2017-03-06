@@ -1,5 +1,5 @@
-function shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L)
-% calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L)
+function shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L,ncut)
+% calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L,ncut)
 %
 % finds wavelength shift between data and model by simple scanning
 
@@ -8,6 +8,9 @@ t = calc_direct_radiance(geo.layer_dens,geo.los_lens,gasvec,cros,sol,1,1,1,0,L);
 
 % convolute
 tc = conv_spectrum(wn,t);
+tc = tc(ncut:end-ncut);
+refe = refe(ncut:end-ncut);
+wn = wn(ncut:end-ncut);
 
 % approximate fit
 tc2 = tc*(tc\refe);

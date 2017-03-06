@@ -59,8 +59,11 @@ wns = (wn-mean(wn))./std(wn);
 wnref = wns([1,fix(end/2),end]);
 L = lagrange(wnref,wns);
 
+% remove some edges of the fitting window
+ncut = 16;
+
 % wavelength shift
-wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L);
+wn_shift = calc_wn_shift(geo,wn,gasvec,cros,refe,sol,L,ncut);
 
 % solar wl shift
 sol_shift = calc_sol_shift(mfile,wn_shift,labpath,solar_line_file,sol_shift_wn);
@@ -69,16 +72,13 @@ sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 % default value for offset 
 offset = 0;
 
-% remove some edges of the fitting window
-ncut = 16;
-
 if (usesimu) % then simulate measurement
     ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
     [refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
 end
 
 % input for residual / jacobian calculation
-varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
+varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut,false);
 
 %% ----------------------------
 %% prior scaling method with LM
@@ -103,7 +103,7 @@ for n=1:ninvgas
     P(n) = {ones(nalt,1)};
 end
 theta2 = [log(theta(1:ninvgas)); theta(ninvgas+1:end)];
-[~,~,K1] = jacfun_dr(theta2,ones(ninvgas,1),P,varargin);
+[~,~,K1] = jacfun_dr(theta2,ones(ninvgas,1),P,0,varargin);
 [out.scaling_A_alpha,out.scaling_A_layer,out.scaling_A_column] = avek_scale(K1,x0,geo.los_lens,varargin{11},geo.altgrid,ncut);
 
 % save results for output
@@ -137,17 +137,18 @@ end
 npar = length(theta0);
 
 % jacobian and residual functions
-jacfuni = @(theta0) jacfun_dr(theta0,d,P,varargin);
-resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
+O = 0;
+jacfuni = @(theta0) jacfun_dr(theta0,d,P,O,varargin);
+resfuni = @(theta0) resfun_dr(theta0,d,P,O,varargin);
 
 % LM-fit of alpha parameters 
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
 % update error estimate and retrieve again 
 noise = noise*sqrt(rss2);
-varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut);
-jacfuni = @(theta0) jacfun_dr(theta0,d,P,varargin);
-resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
+varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut,false);
+jacfuni = @(theta0) jacfun_dr(theta0,d,P,O,varargin);
+resfuni = @(theta0) resfun_dr(theta0,d,P,O,varargin);
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
 % averaging kernel
@@ -156,7 +157,7 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,varargin);
 [out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
 
 % retrieved profiles etc. for output
-out.dr_lm_atmos = redu2full(theta2,d,P,invgas,geo.layer_dens,geo.air);
+out.dr_lm_atmos = redu2full(theta2,d,P,O,invgas,geo.layer_dens,geo.air,false);
 out.dr_lm_theta = theta2;
 out.dr_lm_residual = r2;
 out.dr_lm_cmat = cmat2;
@@ -219,9 +220,13 @@ if (lis)
     
     % complement space
     Po = Lx\v(:,k+1:end);
+
+    % projection from full to LIS space
+    O = (Lx'*v(:,1:k))';
     
     out.lis_s = diag(s);
     out.lis_P = P(1);
+    varargin{14} = true;
     
 else
     disp('using ordinary dimension reduction')
@@ -276,6 +281,7 @@ end
 
 data.d = d;
 data.P = P;
+data.O = O;
 data.varargin = varargin;
 
 % run MCMC

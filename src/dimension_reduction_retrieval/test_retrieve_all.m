@@ -7,7 +7,8 @@ voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 
 % all files in input folder
 mdate = '20140319';
-prefix = ['/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/',mdate,'/'];
+%prefix = ['/home/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/',mdate,'/'];
+prefix = ['/media/tukiains/3b48ca75-37ff-42ba-ab71-b78f39cd9a79/tukiains/Documents/ggg-2014/ggg-stable/i2s/opus-i2s/spectra/',mdate,'/'];
 
 files = list_files(prefix,'so*.0*');
 

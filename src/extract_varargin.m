@@ -1,4 +1,4 @@
-function [wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut] = extract_varargin(a)
+function [wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,err,offset,ncut,lis] = extract_varargin(a)
 
 a = a{:};
 
@@ -15,5 +15,5 @@ geo = a{10};
 err = a{11};
 offset = a{12};
 ncut = a{13};
-
+lis = a{14};
 

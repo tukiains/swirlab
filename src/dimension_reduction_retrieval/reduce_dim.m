@@ -2,6 +2,7 @@ function [P, C, Q] = reduce_dim(invgas,d,alt)
 % [P, C, Q] = reduce_dim(invgas,d,alt)
 
 % Dimensionality reduction for the prior covariance matrix
+% For LIS use ACE data
 
 for n=1:length(invgas)
 
@@ -17,12 +18,7 @@ for n=1:length(invgas)
         d1 = 300;
         d2 = 30;
         Cor = create_cov(alt,mu1,mu2,sigma1,sigma2,d1,d2,l);
-
-        % ace prior
-        %ace = load('/home/tukiains/data/ace_prior');
-        %aaa = interp1(ace.alt,ace.acei,alt,'linear','extrap');
-        %Cor = double(cov(aaa'));
-        
+            
     else
         Cor = diag(ones(length(alt),1))/1000;
     end
