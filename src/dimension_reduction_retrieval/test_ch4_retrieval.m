@@ -2,13 +2,13 @@ clear all
 close all
 
 % set SWIRLAB root path
-addpath(genpath('/foo/MATLAB/swirlab'))
+addpath(genpath('/home/tukiains/Temp/swirlab'))
 
 % set path to Marko Laine's MCMC Toolbox
-addpath(genpath('/foo/mcmcstat'))
+addpath(genpath('/home/tukiains/Documents/MATLAB/mcmcstat'))
 
 % set path for absorption coeffs:
-voigt_path = '/foo/voigt_shapes/';
+voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
@@ -104,7 +104,7 @@ set(gca,'ylim',[0 70])
 set(gca,'xlim',[0 2100])
 ylabel('Altitude [km]')
 xlabel('CH4 [ppb]')
-title([str, ', k: ', num2str(k), ', ACE: ', num2str(ace)]);
+title([str, ', k: ', num2str(k)]);
 
 % model fit and residual plot
 figure(2)
