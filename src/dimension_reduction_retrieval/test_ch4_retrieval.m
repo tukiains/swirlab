@@ -1,32 +1,43 @@
-
 clear all
 close all
 
+% set SWIRLAB root path
+addpath(genpath('/foo/MATLAB/swirlab'))
+
+% set path to Marko Laine's MCMC Toolbox
+addpath(genpath('/foo/mcmcstat'))
+
 % set path for absorption coeffs:
-voigt_path = '/home/tukiains/Dropbox/voigt_shapes/';
+voigt_path = '/foo/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
 % all files in input folder
 prefix = [pathstr,'/../input_data/ftir_spectra/'];
+
 mfiles = list_files(prefix,'so*');
 
-% try some 
-mfile = mfiles{2};
+% options
+zenlim = 82;        % limit for solar zenith angle
+usesimu = false;    % use simulated measurement
+lm_only = false;    % optimal estimation retrieval without MCMC
+lis = true;         % use LIS
+ace = true;         % use empirical ACE-prior
+jaco_sample = true; % evaluate LIS basis at prior mean if false, sample from levmar-approximation if true
+k = 3;              % dimension of prior reduction and LIS subspace, optimal k = 3
 
-zenlim = 82;
-usesimu = false;
-lm_only = false;
-lis = true; % only works with mcmc (if lis = true, set lm_only = false)
-k = 3;
 % fixed offset?
 fixo.scale = true; 
 fixo.dr = true;
 fixo.mcmc = true;
 
-% retrieve ch4
-out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu,zenlim);
+% select file
+mfile = mfiles{2};
 
+% retrieve ch4
+out = ftir_dimred_mcmc(voigt_path,mfile,lm_only,lis,k,fixo,usesimu,zenlim,jaco_sample,ace);
+
+% physical parameters for plotting
 air = out.geo.air;
 alts = out.geo.center_alts;
 x0 = out.geo.layer_dens.ch4;
@@ -41,20 +52,27 @@ hold on
 fa = 0.6;
 
 % prior
-if (lis)
-    P = out.lis_P;
-else
-    P = out.dr_lm_P;
-end
-[h1 pmix] = show_prior(alts,x0,air,P{1});
+P = out.dr_lm_P;
+
+if lis
+    P2 = out.full_P;
+    [h1 pmix] = show_prior(alts,x0,air,P2{1});
+else 
+    [h1 pmix] = show_prior(alts,x0,air,P{1});
+end 
 
 set(h1,'facealpha',fa-0.2)
 
 if (lm_only)
     % dimension reduction with LM:
-    h2 = show_lm(alts,x0,air,out.dr_lm_P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
+    h2 = show_lm(alts,x0,air,P{1},out.dr_lm_theta,out.dr_lm_cmat,out.dr_k);
     set(h2,'facealpha',fa+0.2)
-    str = 'DR (LM)';
+    
+    if (lis)
+        str = 'LIS (LM)';
+    else
+        str = 'DR (LM)';
+    end
 else
     % dimension reduction with MCMC (2-sigma posterior):
     h2 = plot_curtain(alts,plims(out.mcmc_profs,[0.025 0.5 0.975]),[.5 .7 .3]);
@@ -70,7 +88,7 @@ end
 plot(x0./air*1e9,alts,'b--','linewidth',2)
 
 % scaled prior
-%plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1),out.geo.center_alts,'b-','linewidth',2)
+%plot(out.geo.layer_dens.ch4./out.geo.air*out.scaling_factors(1)*1e9,out.geo.center_alts,'k-','linewidth',2)
 
 % aircore
 ac_file = get_aircore_file(get_date(mfile),[pathstr, '/../input_data/aircore/']);
@@ -86,7 +104,9 @@ set(gca,'ylim',[0 70])
 set(gca,'xlim',[0 2100])
 ylabel('Altitude [km]')
 xlabel('CH4 [ppb]')
+title([str, ', k: ', num2str(k), ', ACE: ', num2str(ace)]);
 
+% model fit and residual plot
 figure(2)
 clf
 subplot(2,1,1)
@@ -107,6 +127,3 @@ set(gca,'xlim',[min(wn) max(wn)])
 grid on
 ylabel('Residual')
 xlabel('Wavenumber [cm^{-1}]')
-
-
-

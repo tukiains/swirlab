@@ -1,5 +1,5 @@
-function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu,zenlim)
-% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu,zenlim)
+function out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu,zenlim,jaco_sample,ace)
+% out = ftir_dimred_mcmc(voigt_root_path,mfile,lm_only,lis,k,fixoff,usesimu,zenlim,jaco_sample,ace)
 %
 
 % date of the measurement
@@ -12,14 +12,13 @@ labpath = fileparts(which('calc_direct_geo.m'));
 [window,wnrange,gasvec,invgas,ninvgas,sol_shift_wn,solar_line_file] = window_details('ch4',3);
 
 % solar zenith angle
-out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl'])
+out.sza = get_sza_angle(mfile,[labpath,'/../input_data/ggg_runlog_files/so',mdate,'.grl']);
 
 if (isempty(out.sza) | out.sza>zenlim)
     disp('Error: cant find solar zenith angle for this scan (or too high)')
     return
 end
 
-% voig path
 voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
              int2str(min(window)),'-',int2str(max(window)),'/'];
 
@@ -30,14 +29,16 @@ voigtpath = [voigt_root_path,'voigt_shapes_',mdate,'_', ...
 afile = [labpath,'/../input_data/ggg_apriori_files/so',mdate,'.mav'];
 
 % noise of the spectrum 
-noise = 0.0015;
+init_noise = 0.0015;
+noise = init_noise;
 
 % reference (FTIR measurement)
 [refe,wn] = read_ftir_spectrum(mfile,wnrange);
 
 if (isempty(refe))
+    msg = 'Error: No spectrum';
     disp('Error: No spectrum')
-    return
+    error(msg)
 end
 
 % apodization
@@ -71,7 +72,6 @@ sol = interp1(wn+sol_shift,sol,wn,'linear','extrap');
 
 % default value for offset 
 offset = 0;
-
 if (usesimu) % then simulate measurement
     ac_file = get_aircore_file(mdate,[labpath, '/../input_data/aircore/']);
     [refe,wn_shift,sol_shift] = simulate_ftir_spectrum(c_wn,cros_o,c_alt,wn,gasvec,afile,out.sza,L,sol,noise,ac_file);
@@ -124,7 +124,7 @@ nobs = length(r); % number of true wavelengths
 d = [k ones(1,ninvgas-1)];
 
 % truncate prior covariance 
-[P, C, Q] = reduce_dim(invgas,d,geo.center_alts);
+[P, C, Q] = reduce_dim(invgas,d,geo.center_alts, ace);
 
 % initial values
 theta0 = [zeros(1,sum(d)) theta(ninvgas+1:end)'];
@@ -152,7 +152,6 @@ resfuni = @(theta0) resfun_dr(theta0,d,P,O,varargin);
 [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
 
 % averaging kernel
-
 [~,~,J] = jacfuni(theta2);
 [out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
 
@@ -169,38 +168,55 @@ out.dr_k = k;
 err = cell2mat(varargin(11));
 out.dr_fitted_model = out.t + r2(1:end-sum(d)).*err(ncut:end-ncut);
 out.version = swirlab_version();
-
-if (lm_only)
-    return
-end
+out.date = mdate;
 
 %% --------------------------
-%% LIS method (experimental!)
+%%       LIS method
 %% --------------------------
 
 if (lis)
-    
     disp('using likelihood-informed dimension reduction')
-    % sample Jacobian around MAP
-    meanupd = @(x,m,i) m + 1./i*(x-m);
-    Jm = 0;
-    for i=1:100    
-        [~,~,Jsample] = jacfuni(mvnorr(1,theta2,cmat2)');
-        Jm = meanupd(Jsample,Jm,i);
+    
+    % Get the full-dimensional prior mean for jacobian
+    d2 = [100 ones(1,ninvgas-1)]; 
+    [P2, C2, Q2] = reduce_dim(invgas,d2,geo.center_alts, ace); 
+    theta00 = [zeros(1,sum(d2)) theta(ninvgas+1:end)']; 
+    if (fixoff.scale & not(fixoff.dr))
+        theta00 = [theta00 offset];     
+    elseif (not(fixoff.scale) & fixoff.dr)
+        theta00 = theta00(1:end-1); 
     end
-
-    Jm = Jm*diag(geo.air/1e9); % into ppb space
-
+    npar2 = length(theta00); 
+    noise = init_noise;
+    varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut,false);
+    jacfunii = @(theta00) jacfun_dr(theta00,d2,P2,O,varargin);
+    
+    out.full_P = P2; % for plotting prior in LIS case, fixme
+    
     % measurement error
     Ly = diag(ones(nobs,1)./noise); % Cy = inv(Ly'*Ly)
     
-    % ace profiles over sodankyla
-    ace = load([labpath, '/../input_data/','ace_prior']);
-    ace_profs = interp1(ace.alt,ace.acei,geo.center_alts,'linear','extrap');
+    % covariance
+    cov1 = C2{1};
 
-    % create prior covariance
-    cov1 = double(cov(ace_profs'));
+    meanupd = @(x,m,i) m + 1./i*(x-m);
+    Jm = 0;
+        
+    if jaco_sample
+        % sample LIS basis from LevMar -approximation
+        disp('Sampling...')
+        for i=1:500 % sufficient amount of samples needs to be investigated
+            [~,~,Jsample] = jacfuni(mvnorr(1,theta2,cmat2)'); 
+            Jm = meanupd(Jsample,Jm,i);
+        end
+        disp('...done')
+    else
+        % evaluate LIS basis in prior mean
+        [~,~,Jm] = jacfunii(theta00');
+    end
 
+    Jm = Jm*diag(geo.air/1e9);
+           
     % cholesky of prior covariance    
     Lx = inv(chol(cov1+eye(size(cov1))*0.1,'lower')); % Cx = inv(Lx'*Lx);
 
@@ -209,14 +225,15 @@ if (lis)
     
     % svd of that
     [~,s,v] = svd(Js,0);
-
-    % how many components is needed?
-    k_old = k;
-    k = length(find(diag(s)>1))+1;
-    d(1) = k;
-    npar = npar - (k_old-k);
     
-    P(1) = {Lx\v(:,1:k)}; % projection matrix
+    % how many components is needed?
+    %     - this would show the optimal k from svd:
+    % k = length(find(diag(s)>1))+1;
+    % d(1) = k;
+    % npar = npar - (k_old-k);
+    
+    % projection matrix
+    P(1) = {Lx\v(:,1:k)};
     
     % complement space
     Po = Lx\v(:,k+1:end);
@@ -224,12 +241,64 @@ if (lis)
     % projection from full to LIS space
     O = (Lx'*v(:,1:k))';
     
+    % projection from full to CS
+    Oo = (Lx'*v(:,k+1:end))';
+    
+    out.Lx = Lx;
     out.lis_s = diag(s);
     out.lis_P = P(1);
     varargin{14} = true;
     
+    % --------------------- LIS OE --------------------- %
+    
+    theta0 = [zeros(1,sum(d)) theta(ninvgas+1:end)'];
+    if (fixoff.scale & not(fixoff.dr))
+        theta0 = [theta0 offset];
+    elseif (not(fixoff.scale) & fixoff.dr)
+        theta0 = theta0(1:end-1);
+    end
+    
+    npar = length(theta0);
+    
+    % jacobian and residual functions
+    jacfuni = @(theta0) jacfun_dr(theta0,d,P,O,varargin);
+    resfuni = @(theta0) resfun_dr(theta0,d,P,O,varargin);
+    
+    % LM-fit of alpha parameters 
+    [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
+
+    % update error estimate and retrieve again 
+    noise = noise*sqrt(rss2);
+    varargin = create_varargin(wn,gasvec,cros,refe,invgas,sol,wn_shift,noise,L,geo,offset,ncut,false);
+    jacfuni = @(theta0) jacfun_dr(theta0,d,P,O,varargin);
+    resfuni = @(theta0) resfun_dr(theta0,d,P,O,varargin);
+    [theta2,cmat2,rss2,r2] = levmar(resfuni,jacfuni,theta0);
+
+    % averaging kernel
+    [~,~,J] = jacfuni(theta2);
+    [out.A_alpha,out.A_layer,out.A_column] = avek_dr(J,P{1},theta2(1:d(1)),x0,geo.los_lens,varargin{11},geo.altgrid,ncut,geo.air);
+
+    % retrieved profiles etc. for output
+    out.dr_lm_atmos = redu2full(theta2,d,P,O,invgas,geo.layer_dens,geo.air,lis);
+    out.dr_lm_atmos.ch4 = out.dr_lm_atmos.ch4+(Po*Oo*(x0'./geo.air'*1e9))'.*geo.air/1e9;
+    out.dr_lm_theta = theta2;
+    out.dr_lm_residual = r2;
+    out.dr_lm_cmat = cmat2;
+    out.dr_pri_C = C;
+    out.dr_lm_P = P;
+    out.dr_k = k;
+
+    % model at optimum
+    err = cell2mat(varargin(11));
+    out.dr_fitted_model = out.t + r2(1:end-sum(d)).*err(ncut:end-ncut);
+    out.version = swirlab_version();
+    
 else
     disp('using ordinary dimension reduction')
+end
+
+if (lm_only)
+    return
 end
 
 %% -------------
@@ -240,8 +309,8 @@ model.ssfun = @ssfun_mcmc;            % sum of squares function
 model.sigma2 = 1;                     % initial error variance
 model.N = nobs;                       % number of observations (true wavelengths)
 options.savepostinss = 1;             % if 1 saves posterior ss, if 0 saves likelihood ss
-options.nsimu = 50000;                % number of MCMC laps
-options.burnintime = 5000;
+options.nsimu = 40000;                % number of MCMC laps
+options.burnintime = 1500;
 options.waitbar = 1;                  % graphical waitbar
 options.verbosity = 5;                % how much to show output in Matlab window
 options.printint = 100;               % how often to show info on acceptance ratios
@@ -249,7 +318,7 @@ options.updatesigma = 1;              % 1 allow automatic sampling and estimatio
 options.adaptint = 100;               % how often to adapt the proposal
 options.method = 'am';                % adaptation method: 'mh', 'dr', 'am' or 'dram'
 options.stats = 1;
-options.qcov = diag(diag(cmat2));     % initial covariance for the Gaussian proposal density of the MCMC sampler
+options.qcov = diag(diag(C{1}));     % initial covariance for the Gaussian proposal density of the MCMC sampler
 
 % MCMC parameters to sample: 
 
@@ -283,6 +352,7 @@ data.d = d;
 data.P = P;
 data.O = O;
 data.varargin = varargin;
+data.x0 = x0;
 
 % run MCMC
 [res,chain,s2chain,sschain] = mcmcrun(model,data,params,options);
@@ -302,4 +372,4 @@ out.mcmc_res = res;
 out.mcmc_chain = chain;
 out.mcmc_s2chain = s2chain;
 out.mcmc_sschain = sschain;
-
+out.data = data;
