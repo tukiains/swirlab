@@ -2,13 +2,13 @@ clear all
 close all
 
 % set SWIRLAB root path
-addpath(genpath('/foo/swirlab'))
+addpath(genpath('/home/tukiains/Temp/swirlab'))
 
 % set path to Marko Laine's MCMC Toolbox
-addpath(genpath('/foo/mcmcstat'))
+addpath(genpath('/home/tukiains/Documents/MATLAB/mcmcstat'))
 
 % set path for absorption coeffs:
-voigt_path = '/foo/voigt_shapes/';
+voigt_path = '/home/tukiains/data/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
@@ -24,7 +24,7 @@ lm_only = false;    % optimal estimation retrieval without MCMC
 lis = true;         % use LIS
 ace = true;         % use empirical ACE-prior
 jaco_sample = true; % evaluate LIS basis at prior mean if false, sample from levmar-approximation if true
-k = 3;              % dimension of prior reduction and LIS subspace, optimal k = 3
+k = 5;              % dimension of prior reduction and LIS subspace, optimal k = 5
 
 % fixed offset?
 fixo.scale = true; 

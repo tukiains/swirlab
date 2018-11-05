@@ -202,29 +202,25 @@ if (lis)
     meanupd = @(x,m,i) m + 1./i*(x-m);
     Jm = 0;
         
-    if jaco_sample
-        % sample LIS basis from LevMar -approximation
-        disp('Sampling...')
-        for i=1:500 % sufficient amount of samples needs to be investigated
-            [~,~,Jsample] = jacfuni(mvnorr(1,theta2,cmat2)'); 
-            Jm = meanupd(Jsample,Jm,i);
-        end
-        disp('...done')
-    else
-        % evaluate LIS basis in prior mean
-        [~,~,Jm] = jacfunii(theta00');
-    end
-
-    Jm = Jm*diag(geo.air/1e9);
-           
-    % cholesky of prior covariance    
+    % cholesky of prior covariance
     Lx = inv(chol(cov1+eye(size(cov1))*0.1,'lower')); % Cx = inv(Lx'*Lx);
-
-    % scaled jacobian
-    Js = Ly*Jm/Lx;
+    if jaco_sample % sample LIS basis from LevMar -approximation
+      disp('Sampling...')
+      for i=1:500 % sufficient amount of samples needs to be investigated
+        [~,~,Jsample] = jacfuni(mvnorr(1,theta2,cmat2)');
+        Jsample = Jsample*diag(geo.air/1e9);
+        Js = (Ly*Jsample/Lx)'*(Ly*Jsample/Lx);
+        Jm = meanupd(Js,Jm,i);
+      end
+      disp('...done')
+    else % evaluate LIS basis in prior mean
+      [~,~,Jsample] = jacfunii(theta00');
+      Jsample = Jsample*diag(geo.air/1e9);
+      Jm = (Ly*Jsample/Lx)'*(Ly*Jsample/Lx);
+    end
     
     % svd of that
-    [~,s,v] = svd(Js,0);
+    [~,s,v] = svd(Jm,0);
     
     % how many components is needed?
     %     - this would show the optimal k from svd:
