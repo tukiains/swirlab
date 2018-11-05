@@ -2,13 +2,13 @@ clear all
 close all
 
 % set SWIRLAB root path
-addpath(genpath('/home/tukiains/Temp/swirlab'))
+addpath(genpath('/foo/bar/swirlab'))
 
 % set path to Marko Laine's MCMC Toolbox
-addpath(genpath('/home/tukiains/Documents/MATLAB/mcmcstat'))
+addpath(genpath('/foo/bar/mcmcstat'))
 
 % set path for absorption coeffs:
-voigt_path = '/home/tukiains/data/voigt_shapes/';
+voigt_path = '/foo/bar/voigt_shapes/';
 
 [pathstr,name] = fileparts(which('get_ftir_files.m'));
 
